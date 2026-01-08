@@ -20,7 +20,9 @@ namespace esphome
             void loop() override;
 
             std::vector<uint8_t> get_light_data(light::LightState *state);
-            std::vector<uint8_t> single_control(uint32_t addr, const std::vector<uint8_t> &light_data);
+            std::vector<uint8_t> single_control(uint32_t addr, 
+                                                const std::vector<uint8_t> &light_data,
+                                                bool is_group = false);  // <-- NEW PARAMETER
 
             void queueCommand(uint32_t light_id_, const std::vector<uint8_t> &data);
 

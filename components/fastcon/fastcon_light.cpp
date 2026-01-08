@@ -19,6 +19,9 @@ namespace esphome
                 return;
             }
             ESP_LOGCONFIG(TAG, "Setting up Fastcon BLE light (ID: %d)...", this->light_id_);
+            
+            ESP_LOGCONFIG(TAG, "  Fastcon Light: %s ID: %u", 
+                is_group_ ? "Grup" : "Individual", light_id_);
         }
 
         void FastconLight::set_controller(FastconController *controller)
@@ -58,7 +61,7 @@ namespace esphome
             }
 
             // Generate the advertisement payload
-            auto adv_data = this->controller_->single_control(this->light_id_, light_data);
+            auto adv_data = this->controller_->single_control(this->light_id_, light_data, this->is_group_);
 
             // Debug output - print payload as hex
             auto hex_str = vector_to_hex_string(adv_data).data();

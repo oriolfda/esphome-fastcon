@@ -205,13 +205,30 @@ namespace esphome
             return light_data;
         }
 
-        std::vector<uint8_t> FastconController::single_control(uint32_t light_id_, const std::vector<uint8_t> &light_data)
-        {
-            std::vector<uint8_t> result_data(12);
+        std::vector<uint8_t> FastconController::single_control(
+            uint32_t light_id_, 
+                const std::vector<uint8_t> &light_data,
+                bool is_group = false) {  // <-- NEW PARAMETER
 
-            result_data[0] = 2 | (((0xfffffff & (light_data.size() + 1)) << 4));
-            result_data[1] = light_id_;
-            std::copy(light_data.begin(), light_data.end(), result_data.begin() + 2);
+            std::vector<uint8_t> result_data(12);
+            
+            if (is_group) {
+                // FORMAT GROUP: 43 2A A8 [ID_GROUP has been moved to light_id in fastcon_light.h]
+                result_data[0] = 0x43;
+                result_data[1] = 0x2A;
+                result_data[2] = 0xA8;
+                result_data[3] = light_id_ & 0xFF;
+                std::copy(light_data.begin(), light_data.end(), result_data.begin() + 4);
+                
+                ESP_LOGD(TAG, "Generant comanda GRUP id=%d", light_id_);
+            } else {
+                // FORMAT SINGLE LIGHT
+                result_data[0] = 2 | (((0x0FFFFFF & (light_data.size() + 1)) << 4));
+                result_data[1] = light_id_;
+                std::copy(light_data.begin(), light_data.end(), result_data.begin() + 2);
+                
+                ESP_LOGD(TAG, "Generant comanda INDIVIDUAL id=%d", light_id_);
+            }
 
             // Debug output - print payload as hex
             auto hex_str = vector_to_hex_string(result_data).data();
