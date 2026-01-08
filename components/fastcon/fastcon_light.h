@@ -29,11 +29,13 @@ namespace esphome
             light::LightTraits get_traits() override;
             void write_state(light::LightState *state) override;
             void set_controller(FastconController *controller);
+            void set_supports_cwww(bool v) { supports_cwww_ = v; }
 
         protected:
             FastconController *controller_{nullptr};
             uint8_t light_id_;
             bool is_group_{false};  // <-- NEW - Indicate this is a group
+            bool supports_cwww_{false};
         };
     } // namespace fastcon
 } // namespace esphome
