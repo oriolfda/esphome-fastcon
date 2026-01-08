@@ -38,7 +38,8 @@ CONFIG_SCHEMA = cv.All(
 
 async def to_code(config):
     # FIX: Create without initial light_id parameter    
-    var = cg.new_Pvariable(config[CONF_OUTPUT_ID])
+    light_id_value = config.get(CONF_LIGHT_ID, 0)
+    var = cg.new_Pvariable(config[CONF_OUTPUT_ID], light_id_value)
     #var = cg.new_Pvariable(config[CONF_OUTPUT_ID], config[CONF_LIGHT_ID])
 
     await cg.register_component(var, config)

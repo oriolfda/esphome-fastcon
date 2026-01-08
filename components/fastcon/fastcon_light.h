@@ -20,8 +20,8 @@ namespace esphome
         class FastconLight : public Component, public light::LightOutput
         {
         public:
-            void set_light_id(uint32_t light_id) { light_id_ = light_id; is_group_ = false; }
-            void set_group_id(uint32_t group_id) { light_id_ = group_id; is_group_ = true; } // <-- New - group ID            
+            void set_light_id(uint32_t light_id = 0) { light_id_ = light_id; is_group_ = false; }
+            void set_group_id(uint32_t group_id = 0) { light_id_ = group_id; is_group_ = true; } // <-- New - group ID            
 
             FastconLight(uint8_t light_id) : light_id_(light_id) {}
     
