@@ -27,8 +27,8 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_GROUP_ID): cv.int_range(min=1, max=255),
             cv.Optional(CONF_CONTROLLER_ID, default="fastcon_controller"): cv.use_id(
                 FastconController
-            cv.Optional(CONF_SUPPORTS_CWWW, default=False): cv.boolean,
             ),
+            cv.Optional(CONF_SUPPORTS_CWWW, default=False): cv.boolean,
         }
     ).extend(cv.COMPONENT_SCHEMA),
     # VALIDATION: Must have either light_id OR group_id
