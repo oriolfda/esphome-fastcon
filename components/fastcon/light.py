@@ -31,13 +31,15 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_SUPPORTS_CWWW, default=False): cv.boolean,
         }
     )
-    .extend(cv.COMPONENT_SCHEMA)
+    .extend(cv.COMPONENT_SCHEMA),
     # VALIDATION: Must have either light_id OR group_id
     cv.has_at_least_one_key(CONF_LIGHT_ID, CONF_GROUP_ID)
 )
 
 async def to_code(config):
-    var = cg.new_Pvariable(config[CONF_OUTPUT_ID], config[CONF_LIGHT_ID])
+    # FIX: Create without initial light_id parameter    
+    var = cg.new_Pvariable(config[CONF_OUTPUT_ID])
+    #var = cg.new_Pvariable(config[CONF_OUTPUT_ID], config[CONF_LIGHT_ID])
 
     await cg.register_component(var, config)
     await light.register_light(var, config)
