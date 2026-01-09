@@ -214,7 +214,13 @@ namespace esphome
             
             if (is_group) {
                 // FORMAT GROUP: 43 2A A8 [ID_GROUP has been moved to light_id in fastcon_light.h]
-                result_data[0] = 0x43;
+                if (has_rgb | has_temp)
+                {
+                    result_data[0] = 0x93;
+                }
+                else{
+                    result_data[0] = 0x43;
+                }
                 result_data[1] = 0x2A;
                 result_data[2] = 0xA8;
                 result_data[3] = light_id_ & 0xFF;
