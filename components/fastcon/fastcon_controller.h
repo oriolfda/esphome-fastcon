@@ -22,7 +22,7 @@ namespace esphome
             std::vector<uint8_t> get_light_data(light::LightState *state);
             std::vector<uint8_t> single_control(uint32_t addr, 
                                                 const std::vector<uint8_t> &light_data,
-                                                bool is_group);    // <-- NEW PARAMETER; 
+                                                bool is_group);
 
             void queueCommand(uint32_t light_id_, const std::vector<uint8_t> &data);
 
@@ -51,6 +51,10 @@ namespace esphome
             }
             void set_adv_duration(uint16_t val) { adv_duration_ = val; }
             void set_adv_gap(uint16_t val) { adv_gap_ = val; }
+
+            // Getters per a les variables (opcional)
+            bool get_last_has_rgb() const { return last_has_rgb_; }
+            bool get_last_has_warm() const { return last_has_warm_; }
 
         protected:
             struct Command
@@ -85,11 +89,12 @@ namespace esphome
             uint16_t adv_duration_{50};
             uint16_t adv_gap_{10};
 
+            // VARIABLES DE CLASSE AFEGIDES
+            bool last_has_rgb_ = false;
+            bool last_has_warm_ = false;  // O has_temp, depenent del que vulguis
+
             static const uint16_t MANUFACTURER_DATA_ID = 0xfff0;
         };
-    private:
-        bool last_has_rgb_ = false;
-        bool last_has_warm_ = false;
 
     } // namespace fastcon
 } // namespace esphome
