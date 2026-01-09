@@ -86,7 +86,7 @@ namespace esphome
             uint16_t adv_gap_{10};
 
             static const uint16_t MANUFACTURER_DATA_ID = 0xfff0;
-        }
+        };
     private:
         bool last_has_rgb_ = false;
         bool last_has_warm_ = false;
