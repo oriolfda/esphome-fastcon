@@ -22,7 +22,7 @@ namespace esphome
             std::vector<uint8_t> get_light_data(light::LightState *state);
             std::vector<uint8_t> single_control(uint32_t addr, 
                                                 const std::vector<uint8_t> &light_data,
-                                                bool is_group = false);  // <-- NEW PARAMETER
+                                                bool is_group)    // <-- NEW PARAMETER; 
 
             void queueCommand(uint32_t light_id_, const std::vector<uint8_t> &data);
 
@@ -86,7 +86,10 @@ namespace esphome
             uint16_t adv_gap_{10};
 
             static const uint16_t MANUFACTURER_DATA_ID = 0xfff0;
-        };
+        }
+    private:
+        bool last_has_rgb_ = false;
+        bool last_has_warm_ = false;
 
     } // namespace fastcon
 } // namespace esphome

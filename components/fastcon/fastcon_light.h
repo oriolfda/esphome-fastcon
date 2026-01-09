@@ -30,11 +30,15 @@ namespace esphome
             void write_state(light::LightState *state) override;
             void set_controller(FastconController *controller);
             void set_supports_cwww(bool v) { supports_cwww_ = v; }
+            void set_has_rgb(bool v) { has_rgb_ = v; }
+            void set_has_warm(bool v) { has_warm_ = v; }
 
         protected:
             FastconController *controller_{nullptr};
             uint8_t light_id_;
             bool is_group_{false};  // <-- NEW - Indicate this is a group
+            bool has_rgb_{false};
+            bool has_warm_{false};
             bool supports_cwww_{false};
         };
     } // namespace fastcon

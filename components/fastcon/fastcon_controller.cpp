@@ -165,6 +165,8 @@ namespace esphome
             }
 
             bool has_rgb = (static_cast<uint8_t>(color_mode) & static_cast<uint8_t>(light::ColorCapability::RGB)) != 0;
+            last_has_rgb_ = has_rgb;
+    
             if (has_rgb)
             {
                 light_data[1] = static_cast<uint8_t>(values.get_blue() * 255.0f);
@@ -173,6 +175,7 @@ namespace esphome
             }
 
             bool has_cold_warm = (static_cast<uint8_t>(color_mode) & static_cast<uint8_t>(light::ColorCapability::COLD_WARM_WHITE)) != 0;
+            last_has_warm_ = has_cold_warm;
             if (has_cold_warm)
             {
                 light_data[4] = static_cast<uint8_t>(values.get_warm_white() * 255.0f);
@@ -208,13 +211,14 @@ namespace esphome
         std::vector<uint8_t> FastconController::single_control(
             uint32_t light_id_, 
                 const std::vector<uint8_t> &light_data,
-                bool is_group) {  // <-- NEW PARAMETER
+                bool is_group
+            ) {  // <-- NEW PARAMETER
 
             std::vector<uint8_t> result_data(12);
             
             if (is_group) {
                 // FORMAT GROUP: 43 2A A8 [ID_GROUP has been moved to light_id in fastcon_light.h]
-                if (has_rgb | has_temp)
+                if (last_has_rgb_ | last_has_warm_)
                 {
                     result_data[0] = 0x93;
                 }
