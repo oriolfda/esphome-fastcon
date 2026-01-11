@@ -56,6 +56,23 @@ namespace esphome
             bool get_last_has_rgb() const { return last_has_rgb_; }
             bool get_last_has_warm() const { return last_has_warm_; }
 
+            void send_direct_command(uint8_t device_id, bool is_group, bool state, 
+                                    float brightness = 1.0f, float white_brightness = 0.0f) {
+                FastConLightData data;
+                data.device_id = device_id;
+                data.is_group = is_group;
+                data.state = state;
+                data.brightness = brightness;
+                data.white_brightness = white_brightness;
+                data.color_mode = FastConColorMode::WHITE;
+                data.color_r = 0;
+                data.color_g = 0;
+                data.color_b = 0;
+                data.color_temp = 0;
+                
+                single_control(data);
+            }
+
         protected:
             struct Command
             {
