@@ -103,7 +103,7 @@ namespace esphome
                         light::ColorMode::COLD_WARM_WHITE, // Blanc càlid/fred
                         light::ColorMode::RGB,             // Color RGB
                         light::ColorMode::RGB_WHITE,       // RGB + blanc
-                        light::ColorMode::COLOR_TEMP       // Temperatura de color
+                        light::ColorMode::RGB_COLOR_TEMP      // Temperatura de color
                     });
                     
                     traits.set_min_mireds(153);   // 6500K
