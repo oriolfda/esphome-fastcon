@@ -88,17 +88,13 @@ namespace esphome
                                     light::ColorMode color_mode = light::ColorMode::BRIGHTNESS) {
                 
 
-            bool has_rgb = (color_mode == light::ColorMode::COLOR_MODE_RGB || 
-                            color_mode == light::ColorMode::COLOR_MODE_RGB_WHITE);
-            bool has_warm = (color_mode == light::ColorMode::COLOR_MODE_COLOR_TEMPERATURE);
+            // Simplement defineix-ho així per ara:
+            bool has_rgb = false;  // Per a mode 7 (white) sempre false
+            bool has_warm = false; // Per a mode 7 (white) sempre false
 
-            // Actualitza les variables globals
+            // I actualitza:
             last_has_rgb_ = has_rgb;
             last_has_warm_ = has_warm;
-
-            ESP_LOGI("DEBUG", "RGB: %s, WARM: %s", 
-                    has_rgb ? "true" : "false",
-                    has_warm ? "true" : "false");
 
 
                 ESP_LOGI("DEBUG", "========================================");
