@@ -142,8 +142,9 @@ namespace esphome
                 0  // 5 - Cold byte
             };
             ESP_LOGD("DEBUG_GET_DATA", "get_light_data cridat");
+            ESP_LOGI("LIGHTSTATE", "=== LightState rebut ===");
             // TODO: need to figure out when esphome is changing to white vs setting brightness
-
+            
             auto values = state->current_values;
 
             bool is_on = values.is_on();
