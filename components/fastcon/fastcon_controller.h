@@ -130,8 +130,7 @@ namespace esphome
                     color_values.set_color_brightness(1.0f);
                 }
                 
-                if (color_mode == light::ColorMode::COLOR_TEMP || 
-                    color_mode == light::ColorMode::COLD_WARM_WHITE) {
+                if (color_mode == light::ColorMode::COLD_WARM_WHITE) {
                     color_values.set_color_temperature(color_temp);
                 }
                 
