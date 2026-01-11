@@ -5,6 +5,9 @@
 #include <vector>
 #include "esphome/core/component.h"
 #include "esphome/components/esp32_ble_server/ble_server.h"
+#include "esphome/components/light/light_state.h"
+#include "esphome/components/light/light_color_values.h"
+#include "esphome/components/light/light_traits.h"
 
 namespace esphome
 {
@@ -56,21 +59,33 @@ namespace esphome
             bool get_last_has_rgb() const { return last_has_rgb_; }
             bool get_last_has_warm() const { return last_has_warm_; }
 
-            void send_direct_command(uint8_t device_id, bool is_group, bool state, 
-                                    float brightness = 1.0f, float white_brightness = 0.0f) {
-                FastConLightData data;
-                data.device_id = device_id;
-                data.is_group = is_group;
-                data.state = state;
-                data.brightness = brightness;
-                data.white_brightness = white_brightness;
-                data.color_mode = FastConColorMode::WHITE;
-                data.color_r = 0;
-                data.color_g = 0;
-                data.color_b = 0;
-                data.color_temp = 0;
-                
-                single_control(data);
+            void send_direct_command(uint8_t device_id, bool is_group, bool turn_on, 
+                                    float brightness = 1.0f) {
+            // 1. Creem els trets de la llum (què pot fer)
+            auto traits = light::LightTraits();
+            traits.set_supported_color_modes({light::ColorMode::BRIGHTNESS});
+            
+            // 2. Creem els valors de color (estat actual)
+            auto color_values = light::LightColorValues();
+            color_values.set_state(turn_on);
+            color_values.set_brightness(brightness);
+            color_values.set_color_mode(light::ColorMode::BRIGHTNESS);
+            
+            // 3. Creem un estat de llum temporal
+            // Nota: El constructor pot necessitar un output, li passem nullptr
+            auto temp_state = light::LightState(nullptr);
+            temp_state.set_traits(traits);
+            temp_state.set_current_values(color_values);
+            temp_state.set_remote_values(color_values);
+            
+            // 4. Convertim a light_data (utilitzant el mètode existent)
+            auto light_data = get_light_data(&temp_state);
+            
+            // 5. Enviem per BLE
+            single_control(device_id, light_data, is_group);
+            
+            ESP_LOGI("FASTCON", "Comanda directa: device=%d, group=%d, on=%d, brightness=%.1f",
+                    device_id, is_group, turn_on, brightness);
             }
 
         protected:
