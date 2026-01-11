@@ -83,72 +83,89 @@ namespace esphome
             bool get_last_has_warm() const { return last_has_warm_; }
 
             // Send direct command from device (touchscreen+ESP32) to lights using BLE.
-            void send_direct_command(uint8_t device_id, bool is_group, 
-                                    bool turn_on = true,
+            void send_direct_command(uint8_t device_id, bool is_group, bool turn_on, 
                                     float brightness = 1.0f,
-                                    light::ColorMode color_mode = light::ColorMode::BRIGHTNESS,
-                                    float color_temp = 370.0f,
-                                    float red = 1.0f, float green = 1.0f, float blue = 1.0f) {
+                                    light::ColorMode color_mode = light::ColorMode::BRIGHTNESS) {
                 
-                // 1. Traits per a LLUMS FASTCON (comunes a totes)
+                ESP_LOGI("DEBUG", "========================================");
+                ESP_LOGI("DEBUG", "1. Iniciant send_direct_command");
+                ESP_LOGI("DEBUG", "   device_id: %u, is_group: %s, turn_on: %s",
+                        device_id, is_group ? "true" : "false", turn_on ? "true" : "false");
+                ESP_LOGI("DEBUG", "   brightness: %.2f, color_mode: %d",
+                        brightness, static_cast<int>(color_mode));
+                
+                // 1. Traits
                 static DummyLightOutput dummy_output;
                 static bool traits_initialized = false;
                 
                 if (!traits_initialized) {
+                    ESP_LOGI("DEBUG", "2. Inicialitzant traits per primera vegada");
                     auto traits = light::LightTraits();
-                    
                     traits.set_supported_color_modes({
-                        light::ColorMode::BRIGHTNESS,      // Control bàsic de brillantor
-                        light::ColorMode::WHITE,           // Blanc simple
-                        light::ColorMode::COLD_WARM_WHITE, // Blanc càlid/fred
-                        light::ColorMode::RGB,             // Color RGB
-                        light::ColorMode::RGB_WHITE        // RGB + blanc
+                        light::ColorMode::RGB,
+                        light::ColorMode::WHITE,
+                        light::ColorMode::BRIGHTNESS,
+                        light::ColorMode::COLD_WARM_WHITE
                     });
-                    
-                    traits.set_min_mireds(153);   // 6500K
-                    traits.set_max_mireds(500);   // 2000K
-                    
+                    traits.set_min_mireds(153);
+                    traits.set_max_mireds(500);
                     dummy_output.set_traits(traits);
                     traits_initialized = true;
                 }
                 
-                // 2. Creem LightState
+                // 2. LightState
+                ESP_LOGI("DEBUG", "3. Creant LightState");
                 auto light_state = light::LightState(&dummy_output);
                 
-                // 3. Configurem valors (GENÈRICS, funcionen per a qualsevol llum/grup)
+                // 3. Valors de color
+                ESP_LOGI("DEBUG", "4. Creant LightColorValues");
                 auto color_values = light::LightColorValues();
                 color_values.set_state(turn_on);
                 color_values.set_brightness(brightness);
                 color_values.set_color_mode(color_mode);
                 
-                // Configuració opcional segons mode
-                if (color_mode == light::ColorMode::RGB || 
-                    color_mode == light::ColorMode::RGB_WHITE) {
-                    color_values.set_red(red);
-                    color_values.set_green(green);
-                    color_values.set_blue(blue);
-                    color_values.set_color_brightness(1.0f);
-                }
+                ESP_LOGI("DEBUG", "5. Valors configurats - state: %s, brightness: %.2f",
+                        turn_on ? "true" : "false", brightness);
                 
-                if (color_mode == light::ColorMode::COLD_WARM_WHITE) {
-                    color_values.set_color_temperature(color_temp);
-                }
-                
-                // 4. Apliquem valors
+                // 4. Assigna valors
+                ESP_LOGI("DEBUG", "6. Assignant valors a LightState");
                 light_state.current_values = color_values;
                 light_state.remote_values = color_values;
                 
-                // 5. Obtenim dades i enviem
+                // 5. Obtenim dades
+                ESP_LOGI("DEBUG", "7. Cridant get_light_data()");
                 auto light_data = get_light_data(&light_state);
-                single_control(device_id, light_data, is_group);
                 
-                // 6. Log informatiu
-                ESP_LOGI("FASTCON", "%s %u: %s (Br:%.0f%%, Mode:%d)",
-                        is_group ? "Grup" : "Llum",
-                        device_id,
-                        turn_on ? "ON" : "OFF",
-                        brightness * 100.0f,
-                        static_cast<int>(color_mode));
+                ESP_LOGI("DEBUG", "8. get_light_data() retorna %u bytes:", 
+                        static_cast<unsigned int>(light_data.size()));
+                
+                // Mostra bytes en hex
+                std::string hex_str;
+                for (auto byte : light_data) {
+                    char buf[4];
+                    snprintf(buf, sizeof(buf), "%02X ", byte);
+                    hex_str += buf;
+                }
+                ESP_LOGI("DEBUG", "   Bytes: %s", hex_str.c_str());
+                
+                // 6. Enviem
+                ESP_LOGI("DEBUG", "9. Cridant single_control()");
+                auto result = single_control(device_id, light_data, is_group);
+                
+                ESP_LOGI("DEBUG", "10. single_control() retorna %u bytes",
+                        static_cast<unsigned int>(result.size()));
+                
+                // Mostra resultat
+                std::string result_hex;
+                for (auto byte : result) {
+                    char buf[4];
+                    snprintf(buf, sizeof(buf), "%02X ", byte);
+                    result_hex += buf;
+                }
+                ESP_LOGI("DEBUG", "   Result bytes: %s", result_hex.c_str());
+                
+                ESP_LOGI("DEBUG", "11. Completat!");
+                ESP_LOGI("DEBUG", "========================================");
             }
 
         protected:

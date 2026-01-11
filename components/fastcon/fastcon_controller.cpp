@@ -141,7 +141,7 @@ namespace esphome
                 0, // 4 - Warm byte
                 0  // 5 - Cold byte
             };
-
+            ESP_LOGD("DEBUG_GET_DATA", "get_light_data cridat");
             // TODO: need to figure out when esphome is changing to white vs setting brightness
 
             auto values = state->current_values;
@@ -204,7 +204,8 @@ namespace esphome
                     light_data[5] = (uint8_t)(((temperature - 153) * 255.0f + (500 - temperature) * 0x00) / (500 - 153));
                 }
             }
-
+            ESP_LOGD("DEBUG_GET_DATA", "get_light_data retorna %u bytes", 
+                    static_cast<unsigned int>(light_data.size()));
             return light_data;
         }
 
