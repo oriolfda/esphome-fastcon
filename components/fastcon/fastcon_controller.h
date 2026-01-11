@@ -87,6 +87,20 @@ namespace esphome
                                     float brightness = 1.0f,
                                     light::ColorMode color_mode = light::ColorMode::BRIGHTNESS) {
                 
+
+            bool has_rgb = (color_mode == light::ColorMode::COLOR_MODE_RGB || 
+                            color_mode == light::ColorMode::COLOR_MODE_RGB_WHITE);
+            bool has_warm = (color_mode == light::ColorMode::COLOR_MODE_COLOR_TEMPERATURE);
+
+            // Actualitza les variables globals
+            last_has_rgb_ = has_rgb;
+            last_has_warm_ = has_warm;
+
+            ESP_LOGI("DEBUG", "RGB: %s, WARM: %s", 
+                    has_rgb ? "true" : "false",
+                    has_warm ? "true" : "false");
+
+
                 ESP_LOGI("DEBUG", "========================================");
                 ESP_LOGI("DEBUG", "1. Iniciant send_direct_command");
                 ESP_LOGI("DEBUG", "   device_id: %u, is_group: %s, turn_on: %s",
