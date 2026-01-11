@@ -148,19 +148,27 @@ namespace esphome
             ESP_LOGI("LIGHTSTATE", "Color mode: %d", state->current_values.get_color_mode());     
             ESP_LOGI("LIGHTSTATE", "Raw data: %d", state->current_values.get_color_mode());
 
-            std::vector<uint8_t> raw_data;
-            state->current_values.as_binary(&raw_data);
+            // 1. OBTÉ EL RAW DATA
+            uint8_t* raw_ptr = reinterpret_cast<uint8_t*>(&state->current_values);
+            size_t raw_size = sizeof(state->current_values);
             
-            ESP_LOGI("LIGHTSTATE", "Raw bytes size: %zu", raw_data.size());
+            // 2. MOSTRA EL RAW DATA
+            ESP_LOGI("LIGHTSTATE", "=== RAW LightState ===");
+            ESP_LOGI("LIGHTSTATE", "Adreça: %p", raw_ptr);
+            ESP_LOGI("LIGHTSTATE", "Mida: %zu bytes", raw_size);
             
-            // Formata en HEX per llegir millor
-            char hex_buffer[256] = {0};
-            for (size_t i = 0; i < raw_data.size(); i++) {
-                char temp[8];
-                snprintf(temp, sizeof(temp), "%02X ", raw_data[i]);
-                strcat(hex_buffer, temp);
+            // Hex dump complet
+            char hex_line[100];
+            for (size_t i = 0; i < raw_size; i += 16) {
+                memset(hex_line, 0, sizeof(hex_line));
+                char *ptr = hex_line;
+                ptr += sprintf(ptr, "[%04zx]: ", i);
+                
+                for (size_t j = 0; j < 16 && (i + j) < raw_size; j++) {
+                    ptr += sprintf(ptr, "%02X ", raw_ptr[i + j]);
+                }
+                ESP_LOGI("LIGHTSTATE", "%s", hex_line);
             }
-            ESP_LOGI("LIGHTSTATE", "Raw bytes (HEX): %s", hex_buffer);
 
 
             // TODO: need to figure out when esphome is changing to white vs setting brightness
