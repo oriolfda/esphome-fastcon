@@ -135,8 +135,8 @@ namespace esphome
                 }
                 
                 // 4. Apliquem valors
-                light_state.set_current_values(color_values);
-                light_state.set_remote_values(color_values);
+                light_state.current_values = color_values;
+                light_state.remote_values = color_values;
                 
                 // 5. Obtenim dades i enviem
                 auto light_data = get_light_data(&light_state);
