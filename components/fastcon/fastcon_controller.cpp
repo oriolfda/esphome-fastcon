@@ -146,6 +146,22 @@ namespace esphome
             ESP_LOGI("LIGHTSTATE", "State: %s", state->current_values.is_on() ? "ON" : "OFF");
             ESP_LOGI("LIGHTSTATE", "Brightness: %.2f", state->current_values.get_brightness());
             ESP_LOGI("LIGHTSTATE", "Color mode: %d", state->current_values.get_color_mode());     
+            ESP_LOGI("LIGHTSTATE", "Raw data: %d", state->current_values.get_color_mode());
+
+            std::vector<uint8_t> raw_data;
+            state->current_values.as_binary(&raw_data);
+            
+            ESP_LOGI("LIGHTSTATE", "Raw bytes size: %zu", raw_data.size());
+            
+            // Formata en HEX per llegir millor
+            char hex_buffer[256] = {0};
+            for (size_t i = 0; i < raw_data.size(); i++) {
+                char temp[8];
+                snprintf(temp, sizeof(temp), "%02X ", raw_data[i]);
+                strcat(hex_buffer, temp);
+            }
+            ESP_LOGI("LIGHTSTATE", "Raw bytes (HEX): %s", hex_buffer);
+
 
             // TODO: need to figure out when esphome is changing to white vs setting brightness
             
