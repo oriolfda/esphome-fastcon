@@ -85,7 +85,8 @@ namespace esphome
             // Send direct command from device (touchscreen+ESP32) to lights using BLE.
             void send_direct_command(uint8_t device_id, bool is_group, bool turn_on, 
                                     float brightness = 1.0f,
-                                    light::ColorMode color_mode = light::ColorMode::BRIGHTNESS) {
+                                    light::ColorMode color_mode = light::ColorMode::BRIGHTNESS,
+                                    const std::string &light_name = "") {
                 
 
             // Simplement defineix-ho així per ara:
@@ -141,7 +142,8 @@ namespace esphome
                 ESP_LOGI("DEBUG", "6. Assignant valors a LightState");
                 light_state.current_values = color_values;
                 light_state.remote_values = color_values;
-                
+                light_state.setName(light_name);
+
                 // 5. Obtenim dades
                 ESP_LOGI("DEBUG", "7. Cridant get_light_data()");
                 auto light_data = get_light_data(&light_state);
