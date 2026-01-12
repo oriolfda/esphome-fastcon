@@ -10,6 +10,7 @@
 #include "esphome/components/light/light_state.h"
 #include "esphome/components/light/light_color_values.h"
 #include "esphome/components/light/light_traits.h"
+#include "esphome/core/component_iterator.h"
 
 
 namespace esphome
