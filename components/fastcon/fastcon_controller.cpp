@@ -261,6 +261,7 @@ namespace esphome
                 std::copy(light_data.begin(), light_data.end(), result_data.begin() + 4);
                 
                 ESP_LOGD(TAG, "Generant comanda GRUP id=%d", light_id_);
+                ESP_LOGD(TAG, "Result data=%d", result_data);
             } else {
                 // FORMAT SINGLE LIGHT
                 result_data[0] = 2 | (((0x0FFFFFF & (light_data.size() + 1)) << 4));
