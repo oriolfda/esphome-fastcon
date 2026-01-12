@@ -142,7 +142,7 @@ namespace esphome
                 ESP_LOGI("DEBUG", "6. Assignant valors a LightState");
                 light_state.current_values = color_values;
                 light_state.remote_values = color_values;
-                light_state.set_name(light_name);
+                light_state.set_name(light_name.c_str());
 
                 // 5. Obtenim dades
                 ESP_LOGI("DEBUG", "7. Cridant get_light_data()");
