@@ -167,14 +167,14 @@ namespace esphome
                 ESP_LOGI("DEBUG", "9. Cridant single_control()");
 //                auto result = single_control(device_id, light_data, is_group);
                 // Generate the advertisement payload
-                auto adv_data = single_control(device_id, light_data, is_group);
+                auto adv_data2 = single_control(device_id, light_data, is_group);
 
                 // Debug output - print payload as hex
-                auto hex_str = vector_to_hex_string(adv_data).data();
-                ESP_LOGD(TAG, "Advertisement Payload (%d bytes): %s", adv_data.size(), hex_str);
+                auto hex_strdata = vector_to_hex_string(adv_data).data();
+                ESP_LOGD(TAG, "Advertisement Payload (%d bytes): %s", adv_data.size(), hex_strdata);
 
                 // Send the advertisement
-                queueCommand(this->light_id_, adv_data);
+                queueCommand(this->light_id_, adv_data2);
 
                 ESP_LOGI("DEBUG", "10. single_control() retorna %u bytes",
                         static_cast<unsigned int>(result.size()));
