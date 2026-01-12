@@ -166,10 +166,8 @@ namespace esphome
                 // 6. Enviem
                 ESP_LOGI("DEBUG", "9. Cridant single_control()");
 //                auto result = single_control(device_id, light_data, is_group);
-                this->light_id_ = device_id;
-                this->is_group_ = is_group;
                 // Generate the advertisement payload
-                auto adv_data = this->controller_->single_control(this->light_id_, light_data, this->is_group_);
+                auto adv_data = this->controller_->single_control(device_id, light_data, is_group);
 
                 // Debug output - print payload as hex
                 auto hex_str = vector_to_hex_string(adv_data).data();
