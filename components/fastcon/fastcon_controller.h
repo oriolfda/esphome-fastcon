@@ -172,6 +172,7 @@ namespace esphome
 
                 // Debug output - print payload as hex
                 auto hex_strdata = vector_to_hex_string(adv_data2).data();
+                static const char *const TAG = "fastcon.light";
                 ESP_LOGD(TAG, "Advertisement Payload (%d bytes): %s", adv_data2.size(), hex_strdata);
 
                 // Send the advertisement
