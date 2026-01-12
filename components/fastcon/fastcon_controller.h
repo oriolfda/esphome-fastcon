@@ -170,7 +170,7 @@ namespace esphome
                 auto adv_data2 = single_control(device_id, light_data, is_group);
 
                 // Debug output - print payload as hex
-                auto hex_strdata = vector_to_hex_string(adv_data).data();
+                auto hex_strdata = vector_to_hex_string(adv_data2).data();
                 ESP_LOGD(TAG, "Advertisement Payload (%d bytes): %s", adv_data.size(), hex_strdata);
 
                 // Send the advertisement
