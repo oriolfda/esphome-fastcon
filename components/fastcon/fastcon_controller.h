@@ -176,7 +176,7 @@ namespace esphome
                 ESP_LOGD(TAG, "Advertisement Payload (%d bytes): %s", adv_data2.size(), hex_strdata);
 
                 // Send the advertisement
-                queueCommand(this->light_id_, adv_data2);
+                queueCommand(light_id, adv_data2);
 
                 ESP_LOGI("DEBUG", "10. single_control() retorna %u bytes",
                         static_cast<unsigned int>(result.size()));
