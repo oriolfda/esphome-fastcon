@@ -178,17 +178,17 @@ namespace esphome
                 // Send the advertisement
                 queueCommand(device_id, adv_data2);
 
-                ESP_LOGI("DEBUG", "10. single_control() retorna %u bytes",
-                        static_cast<unsigned int>(result.size()));
+             //   ESP_LOGI("DEBUG", "10. single_control() retorna %u bytes",
+             //          static_cast<unsigned int>(result.size()));
                 
                 // Mostra resultat
-                std::string result_hex;
-                for (auto byte : result) {
-                    char buf[4];
-                    snprintf(buf, sizeof(buf), "%02X ", byte);
-                    result_hex += buf;
-                }
-                ESP_LOGI("DEBUG", "   Result bytes: %s", result_hex.c_str());
+            //    std::string result_hex;
+            //    for (auto byte : result) {
+            //        char buf[4];
+            //        snprintf(buf, sizeof(buf), "%02X ", byte);
+            //        result_hex += buf;
+            //    }
+            //    ESP_LOGI("DEBUG", "   Result bytes: %s", result_hex.c_str());
                 
                 ESP_LOGI("DEBUG", "11. Completat!");
                 ESP_LOGI("DEBUG", "========================================");
