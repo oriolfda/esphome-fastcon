@@ -89,14 +89,16 @@ namespace esphome
                                     const std::string &light_name = "") {
                 
 
-            // Simplement defineix-ho així per ara:
-            bool has_rgb = false;  // Per a mode 7 (white) sempre false
-            bool has_warm = false; // Per a mode 7 (white) sempre false
+                // Simplement defineix-ho així per ara:
+                bool has_rgb = false;  // Per a mode 7 (white) sempre false
+                bool has_warm = false; // Per a mode 7 (white) sempre false
 
-            // I actualitza:
-            last_has_rgb_ = has_rgb;
-            last_has_warm_ = has_warm;
-
+                // I actualitza:
+                last_has_rgb_ = has_rgb;
+                last_has_warm_ = has_warm;
+                
+                char device_id_str[10];
+                snprintf(device_id_str, sizeof(device_id_str), "%u", device_id);      
 
                 ESP_LOGI("DEBUG", "========================================");
                 ESP_LOGI("DEBUG", "1. Iniciant send_direct_command");
@@ -143,6 +145,7 @@ namespace esphome
                 light_state.current_values = color_values;
                 light_state.remote_values = color_values;
                 light_state.set_name(light_name.c_str());
+                light_state.set_objectid(device_id_str);
 
                 // 5. Obtenim dades
                 ESP_LOGI("DEBUG", "7. Cridant get_light_data()");
