@@ -141,12 +141,14 @@ namespace esphome
                 0, // 4 - Warm byte
                 0  // 5 - Cold byte
             };
+
+            state->dump_config();
+
             ESP_LOGD("DEBUG_GET_DATA", "get_light_data cridat");
             ESP_LOGI("LIGHTSTATE", "=== LightState rebut ===");
             ESP_LOGI("LIGHTSTATE", "State: %s", state->current_values.is_on() ? "ON" : "OFF");
             ESP_LOGI("LIGHTSTATE", "Brightness: %.2f", state->current_values.get_brightness());
             ESP_LOGI("LIGHTSTATE", "Color mode: %d", state->current_values.get_color_mode());     
-            ESP_LOGI("LIGHTSTATE", "Raw data: %d", state->current_values.get_color_mode());
 
             // 1. OBTÉ EL RAW DATA
             uint8_t* raw_ptr = reinterpret_cast<uint8_t*>(&state->current_values);
