@@ -147,7 +147,7 @@ namespace esphome
             }
 
             group_members_.push_back(member);
-            ESP_LOGD(TAG, "Added member light ID: %d to group ID: %d", member->light_id_, this->light_id_);
+            ESP_LOGD(TAG, "Added member light ID: %d to group ID: %d", member, this->light_id_);
         }
 
 
