@@ -69,21 +69,37 @@ namespace esphome
             // Enviar la comanda
             this->controller_->queueCommand(this->light_id_, adv_data);
 
+            // Actualitzar estat per Home Assistant
+            state->publish_state();
+
             // Si és un grup, actualitzar tots els membres
             if (this->is_group_) {
-                for (auto *member : this->group_members_) {
+                for (auto member : this->group_members_) {
                     if (member != nullptr) {
-                        ESP_LOGD(TAG, "Updating member light ID: %d", member->light_id_);
+                        auto member_component = dynamic_cast<FastconLight*>(member->get_component());
+                        if (member_component) {
+                            ESP_LOGD(TAG, "Updating member light: ID=%d", member_component->get_light_id());
 
-                        // Copiar tots els valors de la llum principal al membre
-                        member->current_values = vals;
+                            // Copiar valors del grup al membre
+                            member->current_values.set_state(vals.is_on());
+                            member->current_values.set_brightness(vals.get_brightness());
+                            member->current_values.set_color_brightness(vals.get_color_brightness());
+                            member->current_values.set_red(vals.get_red());
+                            member->current_values.set_green(vals.get_green());
+                            member->current_values.set_blue(vals.get_blue());
+                            member->current_values.set_white(vals.get_white());
+                            member->current_values.set_cold_white(vals.get_cold_white());
+                            member->current_values.set_warm_white(vals.get_warm_white());
+                            member->current_values.set_color_temperature(vals.get_color_temperature());
 
-                        // Publicar l'estat a Home Assistant
-                        member->publish_state();
+                            // Publicar l'estat a Home Assistant
+                            member->publish_state();
+                        }
                     }
                 }
             }
         }
+
 
  /*
         void FastconLight::write_state2(light::LightState *state)

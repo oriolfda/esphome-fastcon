@@ -57,8 +57,11 @@ async def to_code(config):
         cg.add(var.set_group_id(group_id))
 
 
-    controller = await cg.get_variable(config[CONF_CONTROLLER_ID])
-    cg.add(var.set_controller(controller))
+    if CONF_MEMBERS in config:
+        for member in config[CONF_MEMBERS]:
+            cg.add(var.add_member(member))
+        controller = await cg.get_variable(config[CONF_CONTROLLER_ID])
+        cg.add(var.set_controller(controller))
 
     if config.get(CONF_SUPPORTS_CWWW):
         cg.add(var.set_supports_cwww(True))
