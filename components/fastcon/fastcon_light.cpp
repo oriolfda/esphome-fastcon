@@ -70,5 +70,19 @@ namespace esphome
             // Send the advertisement
             this->controller_->queueCommand(this->light_id_, adv_data);
         }
+
+        void FastconLight::add_member(light::LightState *member) {
+        if (member == nullptr)
+            return;
+
+        // Evitar duplicats
+        for (auto *m : group_members_) {
+            if (m == member)
+            return;
+        }
+
+        group_members_.push_back(member);
+        }
+
     } // namespace fastcon
 } // namespace esphome

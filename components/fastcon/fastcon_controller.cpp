@@ -176,7 +176,7 @@ namespace esphome
             // TODO: need to figure out when esphome is changing to white vs setting brightness
             
             auto values = state->current_values;
-
+            
             bool is_on = values.is_on();
             if (!is_on)
             {
