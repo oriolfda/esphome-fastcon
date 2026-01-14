@@ -39,10 +39,8 @@ CONFIG_SCHEMA = cv.All(
 )
 
 async def to_code(config):
-    # FIX: Create without initial light_id parameter    
     light_id_value = config.get(CONF_LIGHT_ID, 0)
     var = cg.new_Pvariable(config[CONF_OUTPUT_ID], light_id_value)
-    #var = cg.new_Pvariable(config[CONF_OUTPUT_ID], config[CONF_LIGHT_ID])
 
     await cg.register_component(var, config)
     await light.register_light(var, config)
@@ -53,15 +51,18 @@ async def to_code(config):
         cg.add(var.set_light_id(light_id))
     elif CONF_GROUP_ID in config:
         group_id = config[CONF_GROUP_ID]
-        # This calls the new set_group_id() method in C++
         cg.add(var.set_group_id(group_id))
 
+    # Assign controller
+    controller = await cg.get_variable(config.get(CONF_CONTROLLER_ID, "fastcon_controller"))
+    cg.add(var.set_controller(controller))
 
+    # Assign members (convert Python ID -> C++ pointer)
     if CONF_MEMBERS in config:
         for member in config[CONF_MEMBERS]:
-            cg.add(var.add_member(member))
-        controller = await cg.get_variable(config[CONF_CONTROLLER_ID])
-        cg.add(var.set_controller(controller))
+            member_var = await cg.get_variable(member)
+            cg.add(var.add_member(member_var))
 
+    # Supports CWWW?
     if config.get(CONF_SUPPORTS_CWWW):
         cg.add(var.set_supports_cwww(True))
