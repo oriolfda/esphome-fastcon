@@ -40,48 +40,39 @@ namespace esphome
 
         void FastconLight::write_state(light::LightState *state) {
             auto &vals = state->current_values;
+
             auto light_data = this->controller_->get_light_data(state);
 
-            bool is_on = vals.is_on();
-            float brightness = vals.get_brightness() * 100.0f;
-
-            ESP_LOGD(TAG,
-                    "Writing state: %s id=%d on=%d bri=%.1f%%",
-                    this->is_group_ ? "GROUP" : "LIGHT",
-                    this->light_id_, is_on, brightness);
-
-            // 1️⃣ Enviar ADV BLE (llum o grup)
             auto adv_data =
                 this->controller_->single_control(this->light_id_, light_data, this->is_group_);
+
             this->controller_->queueCommand(this->light_id_, adv_data);
 
-            // 2️⃣ Si és grup → sincronitzar membres a HA
+            // 🔥 SINCRONITZACIÓ DELS MEMBRES
             if (this->is_group_) {
                 for (auto *member : this->group_members_) {
-                    if (member == nullptr)
+                if (member == nullptr)
                     continue;
 
-                    ESP_LOGD(TAG,
-                            "Sync member light_id=%d from group_id=%d",
-                            member->light_id_, this->light_id_);
+                ESP_LOGD(TAG, "Sync member LightState %p from group %d",
+                        member, this->light_id_);
 
-                    auto call = member->state_->make_call();
+                auto call = member->make_call();
 
-                    call.set_state(vals.is_on());
-                    call.set_brightness(vals.get_brightness());
+                call.set_state(vals.is_on());
+                call.set_brightness(vals.get_brightness());
 
-                    if (vals.get_color_mode() == light::ColorMode::RGB) {
+                if (vals.get_color_mode() == light::ColorMode::RGB) {
                     call.set_rgb(vals.get_red(), vals.get_green(), vals.get_blue());
-                    }
+                }
 
-                    if (vals.get_color_mode() == light::ColorMode::COLOR_TEMPERATURE) {
+                if (vals.get_color_mode() == light::ColorMode::COLOR_TEMPERATURE) {
                     call.set_color_temperature(vals.get_color_temperature());
-                    }
+                }
 
-                    call.perform();
+                call.perform();
                 }
             }
-
         }
 
 
@@ -145,17 +136,17 @@ namespace esphome
         }
     */
     
-        void FastconLight::add_member(FastconLight *member) {
+        void FastconLight::add_member(light::LightState *member) {
             if (member == nullptr)
                 return;
 
             // Evitar duplicats
-            for (auto *m : this->group_members_) {
+            for (auto *m : group_members_) {
                 if (m == member)
                     return;
             }
 
-            this->group_members_.push_back(member);
+            group_members_.push_back(member);
             ESP_LOGD(TAG, "Added member light ID: %d to group ID: %d", member->light_id_, this->light_id_);
         }
 

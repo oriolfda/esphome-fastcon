@@ -34,7 +34,7 @@ namespace esphome
             void set_has_rgb(bool v) { has_rgb_ = v; }
             void set_has_warm(bool v) { has_warm_ = v; }
 
-            void add_member(FastconLight *member);
+            void add_member(light::LightState *member);
 
         protected:
             FastconController *controller_{nullptr};
@@ -44,7 +44,7 @@ namespace esphome
             bool has_warm_{false};
             bool supports_cwww_{false};
 
-            std::vector<FastconLight *> group_members_;
+            std::vector<light::LightState *> group_members_;
         };
     } // namespace fastcon
 } // namespace esphome
