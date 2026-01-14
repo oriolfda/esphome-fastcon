@@ -59,7 +59,7 @@ namespace esphome
             }
 
             // Generar el paquet ADV BLE (per llum individual o grup)
-            auto adv_data = this->controller_->single_control(this->light_id_, vals, this->is_group_);
+            auto adv_data = this->controller_->single_control(this->light_id_, light_data, this->is_group_);
 
             // DEBUG: mostrar payload com hex
             auto hex_str = vector_to_hex_string(adv_data).data();
