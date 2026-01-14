@@ -39,66 +39,38 @@ namespace esphome
         }
 
         void FastconLight::write_state(light::LightState *state) {
-            // Obtenir els valors de la llum (estat, RGB, blanc, etc.)
-            auto &vals = state->current_values;
-            auto light_data = this->controller_->get_light_data(state);
+        auto &vals = state->current_values;
+        auto light_data = this->controller_->get_light_data(state);
 
-            // DEBUG: imprimir l'estat de la llum
-            bool is_on = vals.is_on();
-            float brightness = vals.get_brightness() * 100.0f;
+        bool is_on = vals.is_on();
+        float brightness = vals.get_brightness() * 100.0f;
 
-            if (vals.get_color_mode() == light::ColorMode::RGB) {
-                auto r = vals.get_red() * 255;
-                auto g = vals.get_green() * 255;
-                auto b = vals.get_blue() * 255;
-                auto cold = vals.get_cold_white() * 255;
-                auto warm = vals.get_warm_white() * 255;
-                ESP_LOGD(TAG, "Writing state: light_id=%d, on=%d, brightness=%.1f%%, RGBWW=(%d,%d,%d,%d,%d)",
-                        light_id_, is_on, brightness, r, g, b, cold, warm);
-            } else {
-                ESP_LOGD(TAG, "Writing state: light_id=%d, on=%d, brightness=%.1f%%", light_id_, is_on, brightness);
-            }
+        ESP_LOGD(TAG,
+                "Writing state: %s id=%d on=%d bri=%.1f%%",
+                this->is_group_ ? "GROUP" : "LIGHT",
+                this->light_id_, is_on, brightness);
 
-            // Generar el paquet ADV BLE (per llum individual o grup)
-            auto adv_data = this->controller_->single_control(this->light_id_, light_data, this->is_group_);
+        // 1️⃣ Enviar ADV BLE (llum o grup)
+        auto adv_data =
+            this->controller_->single_control(this->light_id_, light_data, this->is_group_);
+        this->controller_->queueCommand(this->light_id_, adv_data);
 
-            // DEBUG: mostrar payload com hex
-            auto hex_str = vector_to_hex_string(adv_data).data();
-            ESP_LOGD(TAG, "Advertisement Payload (%d bytes): %s", adv_data.size(), hex_str);
+        // 2️⃣ Si és grup → sincronitzar membres a HA
+        if (this->is_group_) {
+            for (auto *member : this->group_members_) {
+            if (member == nullptr || member->state_ == nullptr)
+                continue;
 
-            // Enviar la comanda
-            this->controller_->queueCommand(this->light_id_, adv_data);
+            ESP_LOGD(TAG,
+                    "Sync member light_id=%d from group_id=%d",
+                    member->light_id_, this->light_id_);
 
-            // Actualitzar estat per Home Assistant
-            state->publish_state();
-
-            // Si és un grup, actualitzar tots els membres
-            if (this->is_group_) {
-                for (auto member : this->group_members_) {
-                    if (member != nullptr) {
-                        auto member_component = dynamic_cast<FastconLight*>(member->get_component());
-                        if (member_component) {
-                            ESP_LOGD(TAG, "Updating member light: ID=%d", member_component->get_light_id());
-
-                            // Copiar valors del grup al membre
-                            member->current_values.set_state(vals.is_on());
-                            member->current_values.set_brightness(vals.get_brightness());
-                            member->current_values.set_color_brightness(vals.get_color_brightness());
-                            member->current_values.set_red(vals.get_red());
-                            member->current_values.set_green(vals.get_green());
-                            member->current_values.set_blue(vals.get_blue());
-                            member->current_values.set_white(vals.get_white());
-                            member->current_values.set_cold_white(vals.get_cold_white());
-                            member->current_values.set_warm_white(vals.get_warm_white());
-                            member->current_values.set_color_temperature(vals.get_color_temperature());
-
-                            // Publicar l'estat a Home Assistant
-                            member->publish_state();
-                        }
-                    }
-                }
+            member->state_->current_values = vals;
+            member->state_->publish_state();
             }
         }
+        }
+
 
 
  /*
@@ -165,12 +137,12 @@ namespace esphome
                 return;
 
             // Evitar duplicats
-            for (auto *m : group_members_) {
+            for (auto *m : this->group_members_) {
                 if (m == member)
                     return;
             }
 
-            group_members_.push_back(member);
+            this->group_members_.push_back(member);
             ESP_LOGD(TAG, "Added member light ID: %d to group ID: %d", member->light_id_, this->light_id_);
         }
 
