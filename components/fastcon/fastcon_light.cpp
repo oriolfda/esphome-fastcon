@@ -41,6 +41,7 @@ namespace esphome
         void FastconLight::write_state(light::LightState *state) {
             // Obtenir els valors de la llum (estat, RGB, blanc, etc.)
             auto &vals = state->current_values;
+            auto light_data = this->controller_->get_light_data(state);
 
             // DEBUG: imprimir l'estat de la llum
             bool is_on = vals.is_on();
