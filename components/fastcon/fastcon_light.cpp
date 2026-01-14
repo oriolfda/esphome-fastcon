@@ -73,28 +73,24 @@ namespace esphome
             if (is_group_) {
                 for (auto member : group_members_) {
                     if (member != nullptr) {
-                auto call = member->make_call();
-                
-                // Estat i brillantor
-                call.set_state(is_on);
-                call.set_brightness(brightness);
+                        auto call = member->make_call();
+                        
+                        // Estat i brillantor
+                        call.set_state(is_on);
+                        call.set_brightness(brightness);
 
-                // RGB si suporta
-                if (member->supports_rgb_) {
-                    call.set_rgb(
-                        state->current_values.get_red(),
-                        state->current_values.get_green(),
-                        state->current_values.get_blue()
-                    );
-                }
+                        if (member->current_values.supports_rgb()) {
+                            auto rgb = state->current_values.get_rgb();
+                            call.set_rgb(rgb.red, rgb.green, rgb.blue);
+                        }
 
-                // Color temperature si suporta white
-                if (member->supports_white_) {
-                    call.set_color_temperature(state->current_values.get_color_temperature());
-                }
+                        if (member->current_values.supports_white()) {
+                            call.set_color_temperature(state->current_values.get_color_temperature());
+                        }
 
-                // Enviar update a HA
-                call.perform();
+                        // Enviar update a HA
+                        call.perform();
+                    }
                 }
             } 
         }
