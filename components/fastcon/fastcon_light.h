@@ -44,7 +44,7 @@ namespace esphome
             bool has_warm_{false};
             bool supports_cwww_{false};
 
-            std::vector<light::FastconLight *> group_members_;
+            std::vector<FastconLight *> group_members_;
         };
     } // namespace fastcon
 } // namespace esphome
