@@ -39,36 +39,40 @@ namespace esphome
         }
 
         void FastconLight::write_state(light::LightState *state) {
-        auto &vals = state->current_values;
-        auto light_data = this->controller_->get_light_data(state);
+            auto &vals = state->current_values;
+            auto light_data = this->controller_->get_light_data(state);
 
-        bool is_on = vals.is_on();
-        float brightness = vals.get_brightness() * 100.0f;
-
-        ESP_LOGD(TAG,
-                "Writing state: %s id=%d on=%d bri=%.1f%%",
-                this->is_group_ ? "GROUP" : "LIGHT",
-                this->light_id_, is_on, brightness);
-
-        // 1️⃣ Enviar ADV BLE (llum o grup)
-        auto adv_data =
-            this->controller_->single_control(this->light_id_, light_data, this->is_group_);
-        this->controller_->queueCommand(this->light_id_, adv_data);
-
-        // 2️⃣ Si és grup → sincronitzar membres a HA
-        if (this->is_group_) {
-            for (auto *member : this->group_members_) {
-            if (member == nullptr || member->state_ == nullptr)
-                continue;
+            bool is_on = vals.is_on();
+            float brightness = vals.get_brightness() * 100.0f;
 
             ESP_LOGD(TAG,
-                    "Sync member light_id=%d from group_id=%d",
-                    member->light_id_, this->light_id_);
+                    "Writing state: %s id=%d on=%d bri=%.1f%%",
+                    this->is_group_ ? "GROUP" : "LIGHT",
+                    this->light_id_, is_on, brightness);
 
-            member->state_->current_values = vals;
-            member->state_->publish_state();
+            // 1️⃣ Enviar ADV BLE (llum o grup)
+            auto adv_data =
+                this->controller_->single_control(this->light_id_, light_data, this->is_group_);
+            this->controller_->queueCommand(this->light_id_, adv_data);
+
+            // 2️⃣ Si és grup → sincronitzar membres a HA
+            if (this->is_group_) {
+            for (auto *member : this->group_members_) {
+                if (member == nullptr)
+                continue;
+
+                auto *member_state = member->get_light_state();
+                if (member_state == nullptr)
+                continue;
+
+                ESP_LOGD(TAG,
+                        "Sync member light_id=%d from group_id=%d",
+                        member->light_id_, this->light_id_);
+
+                member_state->current_values = vals;
+                member_state->publish_state();
             }
-        }
+            }
         }
 
 

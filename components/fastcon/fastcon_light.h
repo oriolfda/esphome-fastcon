@@ -35,6 +35,7 @@ namespace esphome
             void set_has_warm(bool v) { has_warm_ = v; }
 
             void add_member(FastconLight *member);
+            light::LightState *get_light_state() const { return this->state_; }
 
         protected:
             FastconController *controller_{nullptr};
