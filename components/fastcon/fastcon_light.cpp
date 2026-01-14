@@ -61,7 +61,7 @@ namespace esphome
                 if (member == nullptr)
                 continue;
 
-                auto *member_state = member->get_light_state();
+                auto *member_state = member->get_state();
                 if (member_state == nullptr)
                 continue;
 
