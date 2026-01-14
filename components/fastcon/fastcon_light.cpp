@@ -55,7 +55,7 @@ namespace esphome
                     continue;
 
                 ESP_LOGD(TAG, "Sync member LightState %p from group %d",
-                        member, this->light_id_);
+                        member);
 
                 auto call = member->make_call();
 
