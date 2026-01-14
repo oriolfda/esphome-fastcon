@@ -91,8 +91,7 @@ namespace esphome
                 }
             }
         }
-
-
+ /*
         void FastconLight::write_state2(light::LightState *state)
         {
             // Get the light data bits from the state
@@ -149,7 +148,8 @@ namespace esphome
                 }
             } 
         }
-
+    */
+    
         void FastconLight::add_member(light::LightState *member) {
         if (member == nullptr)
             return;
