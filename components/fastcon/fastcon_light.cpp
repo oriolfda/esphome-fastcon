@@ -73,6 +73,7 @@ namespace esphome
             if (this->is_group_) {
                 for (auto member : this->group_members_) {
                     if (member != nullptr) {
+                        ESP_LOGD(TAG, "Updating member light: %s", member->traits.get_name().c_str());
                         // Copiar tots els valors de la llum principal al membre
                         member->current_values.set_state(vals.is_on());
                         member->current_values.set_brightness(vals.get_brightness());
