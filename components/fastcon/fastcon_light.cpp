@@ -57,22 +57,31 @@ namespace esphome
 
             // 2️⃣ Si és grup → sincronitzar membres a HA
             if (this->is_group_) {
-            for (auto *member : this->group_members_) {
-                if (member == nullptr)
-                continue;
+                for (auto *member : this->group_members_) {
+                    if (member == nullptr)
+                    continue;
 
-                auto *member_state = member->get_state();
-                if (member_state == nullptr)
-                continue;
+                    ESP_LOGD(TAG,
+                            "Sync member light_id=%d from group_id=%d",
+                            member->light_id_, this->light_id_);
 
-                ESP_LOGD(TAG,
-                        "Sync member light_id=%d from group_id=%d",
-                        member->light_id_, this->light_id_);
+                    auto call = member->state_->make_call();
 
-                member_state->current_values = vals;
-                member_state->publish_state();
+                    call.set_state(vals.is_on());
+                    call.set_brightness(vals.get_brightness());
+
+                    if (vals.get_color_mode() == light::ColorMode::RGB) {
+                    call.set_rgb(vals.get_red(), vals.get_green(), vals.get_blue());
+                    }
+
+                    if (vals.get_color_mode() == light::ColorMode::COLOR_TEMPERATURE) {
+                    call.set_color_temperature(vals.get_color_temperature());
+                    }
+
+                    call.perform();
+                }
             }
-            }
+
         }
 
 
