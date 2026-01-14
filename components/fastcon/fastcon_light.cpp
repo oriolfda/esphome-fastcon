@@ -71,20 +71,12 @@ namespace esphome
 
             // Si és un grup, actualitzar tots els membres
             if (this->is_group_) {
-                for (auto member : this->group_members_) {
+                for (auto *member : this->group_members_) {
                     if (member != nullptr) {
-                        ESP_LOGD(TAG, "Updating member light: %s", member->get_traits().get_name().c_str());
+                        ESP_LOGD(TAG, "Updating member light ID: %d", member->light_id_);
+
                         // Copiar tots els valors de la llum principal al membre
-                        member->current_values.set_state(vals.is_on());
-                        member->current_values.set_brightness(vals.get_brightness());
-                        member->current_values.set_color_brightness(vals.get_color_brightness());
-                        member->current_values.set_red(vals.get_red());
-                        member->current_values.set_green(vals.get_green());
-                        member->current_values.set_blue(vals.get_blue());
-                        member->current_values.set_white(vals.get_white());
-                        member->current_values.set_cold_white(vals.get_cold_white());
-                        member->current_values.set_warm_white(vals.get_warm_white());
-                        member->current_values.set_color_temperature(vals.get_color_temperature());
+                        member->current_values = vals;
 
                         // Publicar l'estat a Home Assistant
                         member->publish_state();
@@ -92,6 +84,7 @@ namespace esphome
                 }
             }
         }
+
  /*
         void FastconLight::write_state2(light::LightState *state)
         {
@@ -151,18 +144,20 @@ namespace esphome
         }
     */
     
-        void FastconLight::add_member(light::LightState *member) {
-        if (member == nullptr)
-            return;
+        void FastconLight::add_member(FastconLight *member) {
+            if (member == nullptr)
+                return;
 
-        // Evitar duplicats
-        for (auto *m : group_members_) {
-            if (m == member)
-            return;
+            // Evitar duplicats
+            for (auto *m : group_members_) {
+                if (m == member)
+                    return;
+            }
+
+            group_members_.push_back(member);
+            ESP_LOGD(TAG, "Added member light ID: %d to group ID: %d", member->light_id_, this->light_id_);
         }
 
-        group_members_.push_back(member);
-        }
 
     } // namespace fastcon
 } // namespace esphome
