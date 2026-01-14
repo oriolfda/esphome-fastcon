@@ -46,7 +46,7 @@ namespace esphome
             bool is_on = vals.is_on();
             float brightness = vals.get_brightness() * 100.0f;
 
-            if (vals.get_color_mode() == light::ColorMode::RGBWW) {
+            if (vals.get_color_mode() == light::ColorMode::RGB) {
                 auto r = vals.get_red() * 255;
                 auto g = vals.get_green() * 255;
                 auto b = vals.get_blue() * 255;
