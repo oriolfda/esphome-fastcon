@@ -38,7 +38,61 @@ namespace esphome
             return traits;
         }
 
-        void FastconLight::write_state(light::LightState *state)
+        void FastconLight::write_state(light::LightState *state) {
+            // Obtenir els valors de la llum (estat, RGB, blanc, etc.)
+            auto &vals = state->current_values;
+
+            // DEBUG: imprimir l'estat de la llum
+            bool is_on = vals.is_on();
+            float brightness = vals.get_brightness() * 100.0f;
+
+            if (vals.get_color_mode() == light::ColorMode::RGBWW) {
+                auto r = vals.get_red() * 255;
+                auto g = vals.get_green() * 255;
+                auto b = vals.get_blue() * 255;
+                auto cold = vals.get_cold_white() * 255;
+                auto warm = vals.get_warm_white() * 255;
+                ESP_LOGD(TAG, "Writing state: light_id=%d, on=%d, brightness=%.1f%%, RGBWW=(%d,%d,%d,%d,%d)",
+                        light_id_, is_on, brightness, r, g, b, cold, warm);
+            } else {
+                ESP_LOGD(TAG, "Writing state: light_id=%d, on=%d, brightness=%.1f%%", light_id_, is_on, brightness);
+            }
+
+            // Generar el paquet ADV BLE (per llum individual o grup)
+            auto adv_data = this->controller_->single_control(this->light_id_, vals, this->is_group_);
+
+            // DEBUG: mostrar payload com hex
+            auto hex_str = vector_to_hex_string(adv_data).data();
+            ESP_LOGD(TAG, "Advertisement Payload (%d bytes): %s", adv_data.size(), hex_str);
+
+            // Enviar la comanda
+            this->controller_->queueCommand(this->light_id_, adv_data);
+
+            // Si és un grup, actualitzar tots els membres
+            if (this->is_group_) {
+                for (auto member : this->group_members_) {
+                    if (member != nullptr) {
+                        // Copiar tots els valors de la llum principal al membre
+                        member->current_values.set_state(vals.is_on());
+                        member->current_values.set_brightness(vals.get_brightness());
+                        member->current_values.set_color_brightness(vals.get_color_brightness());
+                        member->current_values.set_red(vals.get_red());
+                        member->current_values.set_green(vals.get_green());
+                        member->current_values.set_blue(vals.get_blue());
+                        member->current_values.set_white(vals.get_white());
+                        member->current_values.set_cold_white(vals.get_cold_white());
+                        member->current_values.set_warm_white(vals.get_warm_white());
+                        member->current_values.set_color_temperature(vals.get_color_temperature());
+
+                        // Publicar l'estat a Home Assistant
+                        member->publish_state();
+                    }
+                }
+            }
+        }
+
+
+        void FastconLight::write_state2(light::LightState *state)
         {
             // Get the light data bits from the state
             auto light_data = this->controller_->get_light_data(state);
