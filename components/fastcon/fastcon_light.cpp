@@ -69,6 +69,15 @@ namespace esphome
 
             // Send the advertisement
             this->controller_->queueCommand(this->light_id_, adv_data);
+
+            if (is_group_) {
+                for (auto member : group_members_) {
+                    if (member != nullptr) {
+                        member->current_values = state->remote_values;
+                        member->publish_state();
+                    }
+                }
+            } 
         }
 
         void FastconLight::add_member(light::LightState *member) {
