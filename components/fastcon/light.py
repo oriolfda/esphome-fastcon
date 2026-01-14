@@ -14,6 +14,7 @@ AUTO_LOAD = ["light"]
 
 CONF_CONTROLLER_ID = "controller_id"
 CONF_GROUP_ID = "group_id"  # New configuration key for groups
+CONF_MEMBERS = "members"
 
 fastcon_ns = cg.esphome_ns.namespace("fastcon")
 FastconLight = fastcon_ns.class_("FastconLight", light.LightOutput, cg.Component)
@@ -27,6 +28,7 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_LIGHT_ID): cv.int_range(min=1, max=255),
             # New optional group_id parameter
             cv.Optional(CONF_GROUP_ID): cv.int_range(min=1, max=255),
+            cv.Optional(CONF_MEMBERS): cv.ensure_list(cv.use_id(light.LightState)),
             cv.Optional(CONF_CONTROLLER_ID, default="fastcon_controller"): cv.use_id(FastconController),
             cv.Optional(CONF_SUPPORTS_CWWW, default=False): cv.boolean,
         }
