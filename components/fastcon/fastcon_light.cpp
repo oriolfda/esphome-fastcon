@@ -73,8 +73,12 @@ namespace esphome
             if (is_group_) {
                 for (auto member : group_members_) {
                     if (member != nullptr) {
-                        member->current_values = state->remote_values;
-                        member->publish_state();
+                        auto call = member->make_call();
+                        call.set_state(state->is_on());
+                        call.set_brightness(state->current_values.get_brightness());
+                        if (state->supports_rgb()) call.set_rgb(state->current_values.get_rgb());
+                        if (state->supports_white()) call.set_color_temperature(state->current_values.get_color_temperature());
+                        call.perform();
                     }
                 }
             } 
