@@ -42,6 +42,7 @@ namespace esphome
             ESP_LOGCONFIG(TAG, "  Advertisement interval: %d-%d", this->adv_interval_min_, this->adv_interval_max_);
             ESP_LOGCONFIG(TAG, "  Advertisement duration: %dms", this->adv_duration_);
             ESP_LOGCONFIG(TAG, "  Advertisement gap: %dms", this->adv_gap_);
+            groups_ready_ = true;
         }
 
         void FastconController::loop()
@@ -417,6 +418,9 @@ namespace esphome
 
         void FastconController::on_state_changed(uint8_t light_id, light::LightState *state) {
             if (!state)
+                return;
+
+            if (!groups_ready_)
                 return;
 
             if (updating_state_)

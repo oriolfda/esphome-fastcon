@@ -219,7 +219,8 @@ namespace esphome
 
             std::unordered_map<uint8_t, GroupInfo> groups_;          // group_id -> GroupInfo
             std::unordered_map<uint8_t, std::vector<uint8_t>> light_groups_; // light_id -> grups pare    
-   
+            bool groups_ready_{false};
+            
         protected:
             struct Command
             {
