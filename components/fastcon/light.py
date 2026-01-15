@@ -90,14 +90,12 @@ async def to_code(config):
     if controller:
         cg.add(controller.dump_groups())
 
-    if FASTCON_GROUPS and config.get(CONF_GROUP_ID) in FASTCON_GROUPS:  
-    # només un cop
-    if config.get(CONF_GROUP_ID) == next(iter(FASTCON_GROUPS)):
+    if FASTCON_GROUPS and not hasattr(to_code, "_groups_emitted"):
         await generate_fastcon_groups()
-
-    # Supports CWWW?
-    if config.get(CONF_SUPPORTS_CWWW):
-        cg.add(var.set_supports_cwww(True))
+        to_code._groups_emitted = True
+        # Supports CWWW?
+        if config.get(CONF_SUPPORTS_CWWW):
+            cg.add(var.set_supports_cwww(True))
 
 async def generate_fastcon_groups():
     if not FASTCON_GROUPS:
