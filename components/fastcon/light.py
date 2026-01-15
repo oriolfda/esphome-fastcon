@@ -91,17 +91,17 @@ async def to_code(config):
         cg.add(controller.dump_groups())
 
     if FASTCON_GROUPS and not hasattr(to_code, "_groups_emitted"):
-        await generate_fastcon_groups()
+        await generate_fastcon_groups(controller)
         to_code._groups_emitted = True
         # Supports CWWW?
         if config.get(CONF_SUPPORTS_CWWW):
             cg.add(var.set_supports_cwww(True))
 
-async def generate_fastcon_groups():
+async def generate_fastcon_groups(controller):
     if not FASTCON_GROUPS:
         return
 
-    controller = await cg.get_variable(config.get(CONF_CONTROLLER_ID, "fastcon_controller"))
+    #controller = await cg.get_variable(config.get(CONF_CONTROLLER_ID, "fastcon_controller"))
 
     for group_id, members in FASTCON_GROUPS.items():
         for light_id, member_id in members:
