@@ -77,7 +77,7 @@ async def to_code(config):
     # REGISTRE DE GRUPS
     # ─────────────────────────────
     if CONF_MEMBERS_WITH_ID in config:
-        controller = await cg.get_variable(config[CONF_CONTROLLER_ID])
+   #     controller = await cg.get_variable(config[CONF_CONTROLLER_ID])
         for m in config[CONF_MEMBERS_WITH_ID]:
             member_state = await cg.get_variable(m[CONF_ID])
             member_light_id = m[CONF_LIGHT_ID]
