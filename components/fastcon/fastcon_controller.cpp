@@ -328,7 +328,10 @@ namespace esphome
        
         void FastconController::dump_groups() {
             ESP_LOGD(TAG, "========== FASTCON GROUP MAP DUMP ==========");
+            if (updating_state_)
+                return;
 
+            updating_state_ = true;
             ESP_LOGD(TAG, "groups_ size: %d", groups_.size());
             for (auto &g : groups_) {
                 uint8_t group_id = g.first;
@@ -354,7 +357,7 @@ namespace esphome
                     ESP_LOGD(TAG, "    -> group ID %d", gid);
                 }
             }
-
+            updating_state_ = false;
             ESP_LOGD(TAG, "============================================");
         }
 
