@@ -91,6 +91,7 @@ async def to_code(config):
                 config[CONF_GROUP_ID],
                 member_state
             ))
+        cg.add(controller.dump_groups())
 
 
     # Supports CWWW?

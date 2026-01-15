@@ -42,7 +42,6 @@ namespace esphome
             ESP_LOGCONFIG(TAG, "  Advertisement interval: %d-%d", this->adv_interval_min_, this->adv_interval_max_);
             ESP_LOGCONFIG(TAG, "  Advertisement duration: %dms", this->adv_duration_);
             ESP_LOGCONFIG(TAG, "  Advertisement gap: %dms", this->adv_gap_);
-            dump_groups();
         }
 
         void FastconController::loop()
