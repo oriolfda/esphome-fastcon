@@ -85,10 +85,10 @@ async def to_code(config):
 
         # Registrar el grup amb tots els members
         cg.add(controller.register_group(
-            config[CONF_GROUP_ID],    # ID del grup
-            config[CONF_LIGHT_ID],    # ID del grup (LightID del grup)
-            var,                      # FastconLight del grup
-            members_vars              # vector de (light_id, LightState*)
+            config[CONF_GROUP_ID],    
+            config[CONF_LIGHT_ID],    
+            var,                      
+            members_vars              
         ))
 
     # Supports CWWW?
