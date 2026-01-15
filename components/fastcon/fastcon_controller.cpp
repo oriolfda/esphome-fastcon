@@ -358,8 +358,9 @@ namespace esphome
                     ESP_LOGD(TAG, "    -> group ID %d", gid);
                 }
             }
-            updating_state_ = false;
             */
+            updating_state_ = false;
+            
             ESP_LOGD(TAG, "============================================");
 
         }
