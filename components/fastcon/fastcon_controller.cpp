@@ -327,41 +327,41 @@ namespace esphome
         }
        
         void FastconController::dump_groups() {
-            ESP_LOGONFIG(TAG, "========== FASTCON GROUP MAP DUMP ==========");
+            ESP_LOGCONFIG(TAG, "========== FASTCON GROUP MAP DUMP ==========");
             if (updating_state_)
                 return;
 
             updating_state_ = true;
-            ESP_LOGONFIG(TAG, "groups_ size: %d", groups_.size());
+            ESP_LOGCONFIG(TAG, "groups_ size: %d", groups_.size());
         /*    
             for (auto &g : groups_) {
                 uint8_t group_id = g.first;
                 auto &info = g.second;
 
-                ESP_LOGONFIG(TAG, "Group ID %d:", group_id);
-                ESP_LOGONFIG(TAG, "  group LightState ptr: %p", info.group);
-                ESP_LOGONFIG(TAG, "  members count: %d", info.members.size());
+                ESP_LOGCONFIG(TAG, "Group ID %d:", group_id);
+                ESP_LOGCONFIG(TAG, "  group LightState ptr: %p", info.group);
+                ESP_LOGCONFIG(TAG, "  members count: %d", info.members.size());
 
                 int idx = 0;
                 for (auto *m : info.members) {
-                    ESP_LOGONFIG(TAG, "    [%d] member LightState ptr: %p", idx++, m);
+                    ESP_LOGCONFIG(TAG, "    [%d] member LightState ptr: %p", idx++, m);
                 }
             }
 
-            ESP_LOGONFIG(TAG, "light_groups_ size: %d", light_groups_.size());
+            ESP_LOGCONFIG(TAG, "light_groups_ size: %d", light_groups_.size());
             for (auto &lg : light_groups_) {
                 uint8_t light_id = lg.first;
                 auto &groups = lg.second;
 
-                ESP_LESP_LOGONFIGOGD(TAG, "Light ID %d belongs to %d group(s):", light_id, groups.size());
+                ESP_LOGCONFIG(TAG, "Light ID %d belongs to %d group(s):", light_id, groups.size());
                 for (auto gid : groups) {
-                    ESP_LOGONFIG(TAG, "    -> group ID %d", gid);
+                    ESP_LOGCONFIG(TAG, "    -> group ID %d", gid);
                 }
             }
             */
             updating_state_ = false;
             
-            ESP_LOGONFIG(TAG, "============================================");
+            ESP_LOGCONFIG(TAG, "============================================");
 
         }
 
