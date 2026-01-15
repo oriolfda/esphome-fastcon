@@ -83,8 +83,8 @@ namespace esphome
             bool get_last_has_rgb() const { return last_has_rgb_; }
             bool get_last_has_warm() const { return last_has_warm_; }
 
-            void register_group(uint8_t group_id, light::LightState group_light, light::LightState *member);
-           
+            void register_group(uint8_t group_id, light::LightState* group_light, const std::vector<light::LightState*>& members);
+
             // Registrar relació grup → membre
             void register_group_member(uint8_t light_id, uint8_t group_id, light::LightState *member);
             // Notificar qualsevol canvi d’estat
