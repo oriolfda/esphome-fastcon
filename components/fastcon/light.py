@@ -70,26 +70,31 @@ async def to_code(config):
     cg.add(var.set_controller(controller))
 
     # Assign members (convert Python ID -> C++ pointer + light_id)
-    if CONF_MEMBERS in config and CONF_GROUP_ID in config and CONF_LIGHT_ID in config:
-        members_vars = []
-        for member in config[CONF_MEMBERS]:
-            member_var = await cg.get_variable(member)
-            # Treure el light_id del YAML del member
-            member_light_id = getattr(member_var, "light_id", None)
-            if member_light_id is None:
-                raise ValueError("Each member must have a light_id defined in YAML")
-            members_vars.append((member_light_id, member_var))
-
-        # Obtenir el controller
+    # ─────────────────────────────
+    # REGISTRE DE GRUPS
+    # ─────────────────────────────
+    if CONF_GROUP_ID in config and CONF_MEMBERS in config:
         controller = await cg.get_variable(config[CONF_CONTROLLER_ID])
 
-        # Registrar el grup amb tots els members
-        cg.add(controller.register_group(
-            config[CONF_GROUP_ID],    
-            config[CONF_LIGHT_ID],    
-            var,                      
-            members_vars              
-        ))
+        group_id = config[CONF_GROUP_ID]
+        group_light_id = 0  # o el que ja estiguis usant per grups
+        group_light_var = var  # FastconLight del grup → LightState*
+
+        members = []
+        for member in config[CONF_MEMBERS]:
+            member_var = await cg.get_variable(member)
+            member_light_id = member[CONF_LIGHT_ID]  # EXTRET DEL YAML DEL MEMBER
+            members.append((member_light_id, member_var))
+
+        cg.add(
+            controller.register_group(
+                group_id,
+                group_light_id,
+                group_light_var,
+                members
+            )
+        )
+
 
     # Supports CWWW?
     if config.get(CONF_SUPPORTS_CWWW):
