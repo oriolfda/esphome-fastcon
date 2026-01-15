@@ -258,6 +258,7 @@ namespace esphome
             bool last_has_warm_ = false;  // O has_temp, depenent del que vulguis
 
             bool updating_groups_ = false; // afegir com a membre de classe
+            std::unordered_map<uint8_t, bool> updating_group_map_;
 
             static const uint16_t MANUFACTURER_DATA_ID = 0xfff0;
         };
