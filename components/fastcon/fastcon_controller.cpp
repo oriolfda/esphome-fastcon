@@ -417,51 +417,39 @@ namespace esphome
             auto git = light_groups_.find(light_id);
             if (git != light_groups_.end()) {
                 for (auto group_id : git->second) {
-                    // Evitar bucle si aquest grup ja està actualitzant-se
-                    if (updating_group_map_[group_id])
-                        continue;
-
                     auto &group_info = groups_[group_id];
+
                     bool all_on = true;
                     for (auto* m : group_info.members) {
-                        if (!m->is_on()) {
+                        if (!m->current_values.is_on()) {
                             all_on = false;
                             break;
                         }
                     }
 
                     auto* group_light = group_info.group;
-                    if (group_light && group_light->is_on() != all_on) {
-                        updating_group_map_[group_id] = true;
+                    if (group_light && group_light->current_values.is_on() != all_on) {
                         auto call = group_light->make_call();
                         call.set_state(all_on);
                         call.perform();
-                        updating_group_map_[group_id] = false;
                     }
                 }
             }
 
-            // 2️⃣ Si el canvi és sobre un grup (light_id = group_id), propagar als membres
+            // 2️⃣ Si el canvi és sobre un grup, propagar als membres
             auto git2 = groups_.find(light_id);
             if (git2 != groups_.end()) {
-                if (!updating_group_map_[light_id]) {
-                    updating_group_map_[light_id] = true;
+                auto &members = git2->second.members;
+                auto* group_light = git2->second.group;
+                bool is_on = group_light->current_values.is_on();
 
-                    auto &members = git2->second.members;
-                    auto* group_light = git2->second.group;
+                for (auto* member : members) {
+                    if (!member)
+                        continue;
 
-                    bool is_on = group_light->is_on();
-
-                    for (auto* member : members) {
-                        if (!member)
-                            continue;
-
-                        auto call = member->make_call();
-                        call.set_state(is_on);
-                        call.perform();
-                    }
-
-                    updating_group_map_[light_id] = false;
+                    auto call = member->make_call();
+                    call.set_state(is_on);
+                    call.perform();
                 }
             }
         }
