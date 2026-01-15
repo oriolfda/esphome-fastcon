@@ -91,7 +91,7 @@ namespace esphome
 
             // Notificar qualsevol canvi d’estat
             void on_state_changed(
-                FastconLight *source,
+                light::LightState *source,
                 light::LightState *state);
 
             // Send direct command from device (touchscreen+ESP32) to lights using BLE.
@@ -206,12 +206,12 @@ namespace esphome
             }
         private:
             struct GroupInfo {
-            FastconLight *group;                   // punter al FastconLight que representa el grup
-            std::vector<FastconLight *> members;  // punters a llums que formen part del grup
+            light::LightState *group;                   // punter al LightState que representa el grup
+            std::vector<light::LightState *> members;  // punters a llums que formen part del grup
             };
 
             std::unordered_map<uint8_t, GroupInfo> groups_;          // group_id -> GroupInfo
-            std::unordered_map<FastconLight *, std::vector<uint8_t>> light_groups_; // llum -> grups pare
+            std::unordered_map<light::LightState *, std::vector<uint8_t>> light_groups_; // llum -> grups pare
         };
 
         protected:

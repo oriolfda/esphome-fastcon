@@ -63,7 +63,7 @@ async def to_code(config):
         for member in config[CONF_MEMBERS]:
             member_var = await cg.get_variable(member)
             cg.add(controller.register_group_member(
-                config[CONF_GROUP_ID], var, member_var))
+                config[CONF_GROUP_ID], member_var))
 
 
     # Supports CWWW?

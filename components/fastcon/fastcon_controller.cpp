@@ -325,39 +325,55 @@ namespace esphome
             std::vector<uint8_t> addr = {DEFAULT_BLE_FASTCON_ADDRESS.begin(), DEFAULT_BLE_FASTCON_ADDRESS.end()};
             return prepare_payload(addr, body);
         }
-        void FastconController::register_group_member(uint8_t group_id, FastconLight *group, FastconLight *member) {
-            auto &g = this->groups_[group_id];
-            g.group = group;
-            if (std::find(g.members.begin(), g.members.end(), member) == g.members.end()) {
-                g.members.push_back(member);
-            }
-            this->light_groups_[member].push_back(group_id);
+        void register_group_member(uint8_t group_id, light::LightState* member) {
+            if (!member) return;
+            group_members_[group_id].push_back(member);
+            light_groups_[member].push_back(group_id);
         }
 
-        void FastconController::on_state_changed(FastconLight *source, light::LightState *state) {
-            if (!source || !state) retnurn;
 
-            // Només cal propagar si és un llum individual
-            if (source->is_group_) return;
+        // Quan un llum individual o grup canvia estat
+        void on_state_changed(light::LightState* light, light::LightState* state) {
+            if (light == nullptr) return;
 
-            auto git = light_groups_.find(source);
+            // Si és un grup, actualitza tots els membres
+            auto it = group_members_.find(light_id_of(light)); // Funció auxiliar per obtenir group_id del LightState si és grup
+            if (it != group_members_.end()) {
+                for (auto* member : it->second) {
+                    if (member != nullptr) {
+                        auto call = member->make_call();
+                        call.set_state(state->is_on());
+                        call.set_brightness(state->get_brightness());
+                        // RGB / CT / White
+                        if (state->get_color_mode() == light::ColorMode::RGB) {
+                            call.set_rgb(state->get_red(), state->get_green(), state->get_blue());
+                        } else if (state->get_color_mode() == light::ColorMode::COLOR_TEMPERATURE) {
+                            call.set_color_temperature(state->get_color_temperature());
+                        }
+                        call.perform();
+                    }
+                }
+            }
+
+            // Actualitzar grups als quals pertany el llum individual
+            auto git = light_groups_.find(light);
             if (git != light_groups_.end()) {
                 for (auto group_id : git->second) {
-                    auto &group_info = groups_[group_id];
+                    auto members = group_members_[group_id];
                     bool all_on = true;
-                    for (auto *member : group_info.members) {
-                        if (!member->state_->current_values.is_on()) {
-                            all_on = false;
-                            break;
-                        }
+                    for (auto* m : members) {
+                        if (!m->is_on()) { all_on = false; break; }
                     }
-
-                    auto call = group_info.group->state_->make_call();
-                    call.set_state(all_on);
-                    call.perform();  // actualitza HA
+                    auto* group_light = find_group_light_by_id(group_id); // Retorna LightState* del grup
+                    if (group_light != nullptr) {
+                        auto call = group_light->make_call();
+                        call.set_state(all_on);
+                        call.perform();
+                    }
                 }
             }
         }
+
 
     } // namespace fastcon
 } // namespace esphome
