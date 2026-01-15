@@ -325,16 +325,17 @@ namespace esphome
             std::vector<uint8_t> addr = {DEFAULT_BLE_FASTCON_ADDRESS.begin(), DEFAULT_BLE_FASTCON_ADDRESS.end()};
             return prepare_payload(addr, body);
         }
+       
         // Registrar un grup amb IDs i punters als members
         void FastconController::register_group(uint8_t group_id,
                                             uint8_t group_light_id,
-                                            light::FastconLight* group_light,
+                                            light::LightState* group_light,  // ⚠ canvia FastconLight* a LightState*
                                             const std::vector<std::pair<uint8_t, light::LightState*>>& members) {
             if (!group_light) return;
 
             // 1. Omplir groups_
             GroupInfo info;
-            info.group = group_light->get_light_state();  // punter al LightState del grup
+            info.group = group_light;  // punter al LightState del grup
             for (auto& m : members) {
                 uint8_t light_id = m.first;
                 light::LightState* state = m.second;
