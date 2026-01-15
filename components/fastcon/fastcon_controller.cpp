@@ -56,7 +56,7 @@ namespace esphome
 
             ESP_LOGI(TAG, "Registering Fastcon light state callbacks");
 
-            for (auto &it : lights_groups_) {
+            for (auto &it : light_groups_) {
                 uint8_t light_id = it.first;
                 auto *light = it.second;
 
