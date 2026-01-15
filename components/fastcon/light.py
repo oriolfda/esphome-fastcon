@@ -15,7 +15,7 @@ AUTO_LOAD = ["light"]
 CONF_CONTROLLER_ID = "controller_id"
 CONF_GROUP_ID = "group_id"  # New configuration key for groups
 CONF_MEMBERS_WITH_ID = "members_with_id"
-
+FASTCON_GROUPS = {}
 
 fastcon_ns = cg.esphome_ns.namespace("fastcon")
 FastconLight = fastcon_ns.class_("FastconLight", light.LightOutput, cg.Component)
@@ -77,19 +77,42 @@ async def to_code(config):
     # REGISTRE DE GRUPS
     # ─────────────────────────────
     if CONF_MEMBERS_WITH_ID in config:
-   #     controller = await cg.get_variable(config[CONF_CONTROLLER_ID])
-        for m in config[CONF_MEMBERS_WITH_ID]:
-            member_state = await cg.get_variable(m[CONF_ID])
-            member_light_id = m[CONF_LIGHT_ID]
+        group_id = config[CONF_GROUP_ID]
 
-            cg.add(controller.register_group_member(
-                member_light_id,
-                config[CONF_GROUP_ID],
-                member_state
-            ))
+        if group_id not in FASTCON_GROUPS:
+            FASTCON_GROUPS[group_id] = []
+
+        for m in config[CONF_MEMBERS_WITH_ID]:
+            FASTCON_GROUPS[group_id].append(
+                (m[CONF_LIGHT_ID], m[CONF_ID])
+            )    
+    
     if controller:
         cg.add(controller.dump_groups())
+
+    if config.get(CONF_GROUP_ID) == list(FASTCON_GROUPS.keys())[0]:
+        await generate_fastcon_groups()
 
     # Supports CWWW?
     if config.get(CONF_SUPPORTS_CWWW):
         cg.add(var.set_supports_cwww(True))
+
+async def generate_fastcon_groups():
+    if not FASTCON_GROUPS:
+        return
+
+    controller = await cg.get_variable("fastcon_controller")
+
+    for group_id, members in FASTCON_GROUPS.items():
+        for light_id, member_id in members:
+            member_state = await cg.get_variable(member_id)
+
+            cg.add(
+                controller.register_group_member(
+                    light_id,
+                    group_id,
+                    member_state
+                )
+            )
+
+    cg.add(controller.dump_groups())
