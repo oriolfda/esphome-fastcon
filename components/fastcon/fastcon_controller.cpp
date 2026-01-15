@@ -338,6 +338,52 @@ namespace esphome
             light_groups_[light_id].push_back(group_id);
         }
 
+        // FastconController.cpp
+        void FastconController::register_group_member(uint8_t light_id, uint8_t group_id, light::LightState *member) {
+            if (member == nullptr)
+                return;
+
+            if (light_id == group_id)
+                return;
+
+            if (group_id == nullptr)
+                return;
+
+            // Evitar duplicats en el grup
+            auto &members = groups_[group_id].members;
+            if (std::find(members.begin(), members.end(), member) == members.end())
+                members.push_back(member);
+
+            // Registrar el grup al light_id individual
+            auto &light_groups_vec = light_groups_[light_id];
+            if (std::find(light_groups_vec.begin(), light_groups_vec.end(), group_id) == light_groups_vec.end())
+                light_groups_vec.push_back(group_id);
+
+            ESP_LOGD(TAG, "Registered light_id %d to group_id %d", light_id, group_id);
+        }
+
+
+
+        // Registrar un grup amb el seu LightState i els members
+        void FastconController::register_group(uint8_t group_id,
+                                                light::LightState* group_light,
+                                                const std::vector<light::LightState*>& members) {
+            if (!group_light) return;
+
+            // 1. Omplir groups_
+            GroupInfo info;
+            info.group = group_light;
+            info.members = members;
+            groups_[group_id] = info;
+
+            // 2. Omplir light_groups_ per cada member
+            for (auto* member : members) {
+                if (!member) continue;
+                uint8_t id = member->get_light_id(); // aquí necessites un getter a LightState que retorni l'ID
+                light_groups_[id].push_back(group_id);
+            }
+        }
+
 
         // fastcon_controller.cpp: nou mètode on_state_changed(light_id, state)
         void on_state_changed(uint8_t light_id, light::LightState *state) {

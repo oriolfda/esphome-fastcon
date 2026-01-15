@@ -63,8 +63,10 @@ async def to_code(config):
         for member in config[CONF_MEMBERS]:
             member_var = await cg.get_variable(member)
             cg.add(controller.register_group_member(
-                config[CONF_GROUP_ID], member_var))
-
+                config[CONF_LIGHT_ID],  # light_id del grup
+                config[CONF_GROUP_ID],  # group_id
+                member_var              # punter al LightState del member
+            ))
 
     # Supports CWWW?
     if config.get(CONF_SUPPORTS_CWWW):
