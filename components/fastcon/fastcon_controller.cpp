@@ -325,47 +325,47 @@ namespace esphome
             std::vector<uint8_t> addr = {DEFAULT_BLE_FASTCON_ADDRESS.begin(), DEFAULT_BLE_FASTCON_ADDRESS.end()};
             return prepare_payload(addr, body);
         }
-
-        // FastconController.cpp
-        void FastconController::register_group_member(uint8_t light_id, uint8_t group_id, light::LightState *member) {
-            if (member == nullptr)
-                return;
-
-            if (light_id == group_id)
-                return;
-
-            // Evitar duplicats en el grup.
-            auto &members = groups_[group_id].members;
-            if (std::find(members.begin(), members.end(), member) == members.end())
-                members.push_back(member);
-
-            // Registrar el grup al light_id individual
-            auto &light_groups_vec = light_groups_[light_id];
-            if (std::find(light_groups_vec.begin(), light_groups_vec.end(), group_id) == light_groups_vec.end())
-                light_groups_vec.push_back(group_id);
-
-            ESP_LOGD(TAG, "Registered light_id %d to group_id %d", light_id, group_id);
-        }
-
-        
-        // Registrar un grup amb el seu LightState i els members
+        // Registrar un grup amb IDs i punters als members
         void FastconController::register_group(uint8_t group_id,
-                                                light::LightState* group_light,
-                                                const std::vector<light::LightState*>& members) {
+                                            uint8_t group_light_id,
+                                            light::FastconLight* group_light,
+                                            const std::vector<std::pair<uint8_t, light::LightState*>>& members) {
             if (!group_light) return;
 
             // 1. Omplir groups_
             GroupInfo info;
-            info.group = group_light;
-            info.members = members;
+            info.group = group_light->get_light_state();  // punter al LightState del grup
+            for (auto& m : members) {
+                uint8_t light_id = m.first;
+                light::LightState* state = m.second;
+
+                info.members.push_back(state);
+
+                // Registrar el grup a light_groups_
+                auto& lg = light_groups_[light_id];
+                if (std::find(lg.begin(), lg.end(), group_id) == lg.end())
+                    lg.push_back(group_id);
+            }
             groups_[group_id] = info;
 
-            // 2. Omplir light_groups_ per cada member
-            for (auto* member : members) {
-                if (!member) continue;
-                uint8_t id = member->get_light_id(); // aquí necessites un getter a LightState que retorni l'ID
-                light_groups_[id].push_back(group_id);
-            }
+            ESP_LOGD(TAG, "Registered group_id %d with %d members", group_id, info.members.size());
+        }
+
+        // Registrar un member individual al grup
+        void FastconController::register_group_member(uint8_t light_id, uint8_t group_id, light::LightState* member) {
+            if (!member) return;
+
+            // Evitar duplicats
+            auto& members = groups_[group_id].members;
+            if (std::find(members.begin(), members.end(), member) == members.end())
+                members.push_back(member);
+
+            // Registrar grup al member
+            auto& lg = light_groups_[light_id];
+            if (std::find(lg.begin(), lg.end(), group_id) == lg.end())
+                lg.push_back(group_id);
+
+            ESP_LOGD(TAG, "Registered light_id %d to group_id %d", light_id, group_id);
         }
 
 
