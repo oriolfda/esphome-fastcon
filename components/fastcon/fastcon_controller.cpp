@@ -413,7 +413,12 @@ namespace esphome
         void FastconController::on_state_changed(uint8_t light_id, light::LightState *state) {
             // Buscar grups als quals pertany aquest light_id
             ESP_LOGD(TAG, "on_state_changed called");
-            dump_groups();
+            //dump_groups();
+
+            if (updating_groups_)
+                return; // bloquejar feedback loop
+
+            updating_groups_ = true;            
             
             auto git = this->light_groups_.find(light_id);
             if (git != this->light_groups_.end()) {
@@ -440,6 +445,7 @@ namespace esphome
                     }
                 }
             }
+            updating_groups = false;
         }
     } // namespace fastcon
 } // namespace esphome
