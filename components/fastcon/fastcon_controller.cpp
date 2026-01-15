@@ -445,7 +445,7 @@ namespace esphome
                     }
                 }
             }
-            updating_groups = false;
+            updating_groups_ = false;
         }
     } // namespace fastcon
 } // namespace esphome
