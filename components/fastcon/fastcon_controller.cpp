@@ -3,6 +3,7 @@
 #include "esphome/components/light/color_mode.h"
 #include "fastcon_controller.h"
 #include "protocol.h"
+#include <unordered_set>
 
 namespace esphome
 {
