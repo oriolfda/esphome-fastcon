@@ -69,31 +69,27 @@ async def to_code(config):
     controller = await cg.get_variable(config.get(CONF_CONTROLLER_ID, "fastcon_controller"))
     cg.add(var.set_controller(controller))
 
-    # Register group members with IDs
+    # Assign members (convert Python ID -> C++ pointer + light_id)
     if CONF_MEMBERS in config and CONF_GROUP_ID in config:
         members_vars = []
         for member in config[CONF_MEMBERS]:
             member_var = await cg.get_variable(member)
-            member_light_id = None
-            # Intentem extreure l'ID del member (ha d'estar definit al YAML del member)
-            if hasattr(member_var, "light_id_"):
-                member_light_id = member_var.light_id_
-            elif hasattr(member_var, "get_light_id"):
-                member_light_id = member_var.get_light_id()
-            else:
-                raise ValueError("LightState member has no light_id")
+            # Treure el light_id del YAML del member
+            member_light_id = getattr(member_var, "light_id", None)
+            if member_light_id is None:
+                raise ValueError("Each member must have a light_id defined in YAML")
             members_vars.append((member_light_id, member_var))
 
-        # Registrar el grup al controller
-        group_light_var = var  # el FastconLight del grup
-        cg.add(controller.register_group(group_id, light_id if "light_id" in locals() else 0,
-                                        group_light_var, members_vars))
+        # Obtenir el controller
+        controller = await cg.get_variable(config[CONF_CONTROLLER_ID])
 
-        # També registrar cada member al grup
-        for light_id_member, member_var in members_vars:
-            cg.add(controller.register_group_member(light_id_member, group_id, member_var))
-
-
+        # Registrar el grup amb tots els members
+        cg.add(controller.register_group(
+            config[CONF_GROUP_ID],    # ID del grup
+            config[CONF_LIGHT_ID],    # ID del grup (LightID del grup)
+            var,                      # FastconLight del grup
+            members_vars              # vector de (light_id, LightState*)
+        ))
 
     # Supports CWWW?
     if config.get(CONF_SUPPORTS_CWWW):
