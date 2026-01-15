@@ -115,4 +115,4 @@ async def generate_fastcon_groups(controller):
                 )
             )
 
-    cg.add(controller.dump_groups())
+    #cg.add(controller.dump_groups())
