@@ -58,14 +58,14 @@ async def to_code(config):
     cg.add(var.set_controller(controller))
 
     # Assign members (convert Python ID -> C++ pointer)
-    if CONF_MEMBERS in config:
+    if CONF_MEMBERS in config and CONF_LIGHT_ID in config and CONF_GROUP_ID in config:
         controller = await cg.get_variable(config[CONF_CONTROLLER_ID])
         for member in config[CONF_MEMBERS]:
             member_var = await cg.get_variable(member)
             cg.add(controller.register_group_member(
-                config[CONF_LIGHT_ID],  
-                config[CONF_GROUP_ID],  
-                member_var              
+                config[CONF_LIGHT_ID],   # light_id del grup
+                config[CONF_GROUP_ID],   # group_id
+                member_var               # punter al LightState del member
             ))
 
     # Supports CWWW?
