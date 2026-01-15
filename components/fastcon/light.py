@@ -90,7 +90,9 @@ async def to_code(config):
     if controller:
         cg.add(controller.dump_groups())
 
-    if config.get(CONF_GROUP_ID) == list(FASTCON_GROUPS.keys())[0]:
+    if FASTCON_GROUPS and config.get(CONF_GROUP_ID) in FASTCON_GROUPS:  
+    # només un cop
+    if config.get(CONF_GROUP_ID) == next(iter(FASTCON_GROUPS)):
         await generate_fastcon_groups()
 
     # Supports CWWW?
