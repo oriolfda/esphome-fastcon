@@ -333,7 +333,7 @@ namespace esphome
 
             updating_state_ = true;
             ESP_LOGD(TAG, "groups_ size: %d", groups_.size());
-            /*
+            
             for (auto &g : groups_) {
                 uint8_t group_id = g.first;
                 auto &info = g.second;
@@ -358,7 +358,7 @@ namespace esphome
                     ESP_LOGD(TAG, "    -> group ID %d", gid);
                 }
             }
-            */
+            
             updating_state_ = false;
             
             ESP_LOGD(TAG, "============================================");
