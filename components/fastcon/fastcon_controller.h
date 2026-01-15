@@ -86,7 +86,6 @@ namespace esphome
             // Registrar relació grup → membre
             void register_group_member(
                 uint8_t group_id,
-                light::LightState  *group,
                 light::LightState  *member);
 
             // Notificar qualsevol canvi d’estat
