@@ -417,7 +417,7 @@ namespace esphome
 
             updating_state_ = true;
 
-            // Propagar estat als grups als quals pertany el llum individual.
+            // 🔹 Propagar estat als grups als quals pertany el llum individual
             auto git = light_groups_.find(light_id);
             if (git != light_groups_.end()) {
                 for (auto group_id : git->second) {
@@ -433,14 +433,14 @@ namespace esphome
 
                     auto* group_light = group_info.group;
                     if (group_light && group_light->current_values.is_on() != all_on) {
-                        auto call = group_light->make_call();
-                        call.set_state(all_on);
-                        call.perform();
+                        // Canviem call.perform() per publish_state()
+                        group_light->current_values.set_state(all_on);
+                        group_light->publish_state();
                     }
                 }
             }
 
-            // Si el canvi és sobre un grup, propagar als membres
+            // 🔹 Si el canvi és sobre un grup, propagar als membres
             auto git2 = groups_.find(light_id);
             if (git2 != groups_.end()) {
                 auto &members = git2->second.members;
@@ -452,9 +452,8 @@ namespace esphome
                         continue;
 
                     if (member->current_values.is_on() != is_on) {
-                        auto call = member->make_call();
-                        call.set_state(is_on);
-                        call.perform();
+                        member->current_values.set_state(is_on);
+                        member->publish_state();  // 🔹 substituïm call.perform()
                     }
                 }
             }
