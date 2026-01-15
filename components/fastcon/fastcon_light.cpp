@@ -140,21 +140,6 @@ namespace esphome
             } 
         }
     */
-    
-        void FastconLight::add_member(light::LightState *member) {
-            if (member == nullptr)
-                return;
-
-            // Evitar duplicats
-            for (auto *m : group_members_) {
-                if (m == member)
-                    return;
-            }
-
-            group_members_.push_back(member);
-            ESP_LOGD(TAG, "Added member light ID: %d to group ID: %d", member, this->light_id_);
-        }
-
 
     } // namespace fastcon
 } // namespace esphome
