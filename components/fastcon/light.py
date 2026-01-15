@@ -101,7 +101,7 @@ async def generate_fastcon_groups():
     if not FASTCON_GROUPS:
         return
 
-    controller = await cg.get_variable("fastcon_controller")
+    controller = await cg.get_variable(config.get(CONF_CONTROLLER_ID, "fastcon_controller"))
 
     for group_id, members in FASTCON_GROUPS.items():
         for light_id, member_id in members:
