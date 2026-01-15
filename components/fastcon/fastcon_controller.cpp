@@ -56,21 +56,23 @@ namespace esphome
 
             ESP_LOGI(TAG, "Registering Fastcon light state callbacks");
 
-            for (auto &it : light_groups_) {
-                uint8_t light_id = it.first;
-                auto *light = it.second;
+            // Recórrer tots els grups
+            for (auto &g : groups_) {
+                for (auto* member : g.second.members) {
+                    if (!member)
+                        continue;
 
-                if (!light)
-                    continue;
-
-                light->add_on_state_callback(
-                    [this, light_id](light::LightState *state) {
-                        this->on_state_changed(light_id, state);
-                    });
+                    uint8_t member_id = member->get_light_id(); // si tens getter o llums amb IDs ja assignats
+                    member->add_on_state_callback(
+                        [this, member_id](light::LightState* state) {
+                            this->on_state_changed(member_id, state);
+                        });
+                }
             }
 
             callbacks_registered_ = true;
         }
+
 
 
         void FastconController::loop()
