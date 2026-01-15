@@ -326,18 +326,6 @@ namespace esphome
             return prepare_payload(addr, body);
         }
 
-        void FastconController::register_group_member(uint8_t group_id, light::LightState *member) {
-            if (member == nullptr)
-                return;
-
-            // Afegir el LightState al vector de membres del grup
-            groups_[group_id].members.push_back(member);
-
-            // Afegir el group_id a la llista de grups del light_id
-            uint8_t light_id = member->get_traits().get_id();  // obtenir el light_id del LightState
-            light_groups_[light_id].push_back(group_id);
-        }
-
         // FastconController.cpp
         void FastconController::register_group_member(uint8_t light_id, uint8_t group_id, light::LightState *member) {
             if (member == nullptr)
