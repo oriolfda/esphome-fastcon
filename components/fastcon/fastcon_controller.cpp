@@ -347,8 +347,7 @@ namespace esphome
             ESP_LOGD(TAG, "Registered light_id %d to group_id %d", light_id, group_id);
         }
 
-
-
+        
         // Registrar un grup amb el seu LightState i els members
         void FastconController::register_group(uint8_t group_id,
                                                 light::LightState* group_light,

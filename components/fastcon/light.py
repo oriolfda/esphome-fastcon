@@ -57,6 +57,15 @@ async def to_code(config):
     controller = await cg.get_variable(config.get(CONF_CONTROLLER_ID, "fastcon_controller"))
     cg.add(var.set_controller(controller))
 
+    if CONF_GROUP_ID in config:
+        group_id = config[CONF_GROUP_ID]
+        group_light_var = var  # el FastconLight del grup
+        members_vars = []
+        if CONF_MEMBERS in config:
+            for member in config[CONF_MEMBERS]:
+                members_vars.append(await cg.get_variable(member))
+        cg.add(controller.register_group(group_id, group_light_var, members_vars))
+
     # Assign members (convert Python ID -> C++ pointer)
     if CONF_MEMBERS in config and CONF_LIGHT_ID in config and CONF_GROUP_ID in config:
         controller = await cg.get_variable(config[CONF_CONTROLLER_ID])
