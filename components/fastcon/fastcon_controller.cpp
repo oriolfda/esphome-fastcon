@@ -373,8 +373,8 @@ namespace esphome
         // fastcon_controller.cpp: nou mètode on_state_changed(light_id, state)
         void on_state_changed(uint8_t light_id, light::LightState *state) {
             // Buscar grups als quals pertany aquest light_id
-            auto git = light_groups_.find(light_id);
-            if (git != light_groups_.end()) {
+            auto git = this->light_groups_.find(light_id);
+            if (git != this->light_groups_.end()) {
                 for (auto group_id : git->second) {
                     auto group_it = groups_.find(group_id);
                     if (group_it == groups_.end()) continue;
