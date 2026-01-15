@@ -77,13 +77,13 @@ async def to_code(config):
         controller = await cg.get_variable(config[CONF_CONTROLLER_ID])
 
         group_id = config[CONF_GROUP_ID]
-        group_light_id = 0  # o el que ja estiguis usant per grups
-        group_light_var = var  # FastconLight del grup → LightState*
+        group_light_id = 0 
+        group_light_var = var  
 
         members = []
         for member in config[CONF_MEMBERS]:
             member_var = await cg.get_variable(member)
-            member_light_id = member[CONF_LIGHT_ID]  # EXTRET DEL YAML DEL MEMBER
+            member_light_id = member[CONF_LIGHT_ID]  
             members.append((member_light_id, member_var))
 
         cg.add(
