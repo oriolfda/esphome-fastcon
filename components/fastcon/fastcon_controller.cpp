@@ -327,41 +327,41 @@ namespace esphome
         }
        
         void FastconController::dump_groups() {
-            ESP_LOGD(TAG, "========== FASTCON GROUP MAP DUMP ==========");
+            ESP_LOGONFIG(TAG, "========== FASTCON GROUP MAP DUMP ==========");
             if (updating_state_)
                 return;
 
             updating_state_ = true;
-            ESP_LOGD(TAG, "groups_ size: %d", groups_.size());
-            
+            ESP_LOGONFIG(TAG, "groups_ size: %d", groups_.size());
+        /*    
             for (auto &g : groups_) {
                 uint8_t group_id = g.first;
                 auto &info = g.second;
 
-                ESP_LOGD(TAG, "Group ID %d:", group_id);
-                ESP_LOGD(TAG, "  group LightState ptr: %p", info.group);
-                ESP_LOGD(TAG, "  members count: %d", info.members.size());
+                ESP_LOGONFIG(TAG, "Group ID %d:", group_id);
+                ESP_LOGONFIG(TAG, "  group LightState ptr: %p", info.group);
+                ESP_LOGONFIG(TAG, "  members count: %d", info.members.size());
 
                 int idx = 0;
                 for (auto *m : info.members) {
-                    ESP_LOGD(TAG, "    [%d] member LightState ptr: %p", idx++, m);
+                    ESP_LOGONFIG(TAG, "    [%d] member LightState ptr: %p", idx++, m);
                 }
             }
 
-            ESP_LOGD(TAG, "light_groups_ size: %d", light_groups_.size());
+            ESP_LOGONFIG(TAG, "light_groups_ size: %d", light_groups_.size());
             for (auto &lg : light_groups_) {
                 uint8_t light_id = lg.first;
                 auto &groups = lg.second;
 
-                ESP_LOGD(TAG, "Light ID %d belongs to %d group(s):", light_id, groups.size());
+                ESP_LESP_LOGONFIGOGD(TAG, "Light ID %d belongs to %d group(s):", light_id, groups.size());
                 for (auto gid : groups) {
-                    ESP_LOGD(TAG, "    -> group ID %d", gid);
+                    ESP_LOGONFIG(TAG, "    -> group ID %d", gid);
                 }
             }
-            
+            */
             updating_state_ = false;
             
-            ESP_LOGD(TAG, "============================================");
+            ESP_LOGONFIG(TAG, "============================================");
 
         }
 
