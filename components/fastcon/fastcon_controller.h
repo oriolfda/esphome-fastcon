@@ -259,6 +259,7 @@ namespace esphome
 
             bool updating_groups_ = false; // afegir com a membre de classe
             std::unordered_map<uint8_t, bool> updating_group_map_;
+            bool updating_state_{false};
 
             static const uint16_t MANUFACTURER_DATA_ID = 0xfff0;
         };

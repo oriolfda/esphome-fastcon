@@ -408,12 +408,16 @@ namespace esphome
             ESP_LOGD(TAG, "Registered light ID %d to group ID %d", light_id, group_id);
         }
 
-
         void FastconController::on_state_changed(uint8_t light_id, light::LightState *state) {
             if (!state)
                 return;
 
-            // 1️⃣ Propagar estat als grups als quals pertany el llum individual
+            if (updating_state_)
+                return;
+
+            updating_state_ = true;
+
+            // Propagar estat als grups als quals pertany el llum individual
             auto git = light_groups_.find(light_id);
             if (git != light_groups_.end()) {
                 for (auto group_id : git->second) {
@@ -436,7 +440,7 @@ namespace esphome
                 }
             }
 
-            // 2️⃣ Si el canvi és sobre un grup, propagar als membres
+            // Si el canvi és sobre un grup, propagar als membres
             auto git2 = groups_.find(light_id);
             if (git2 != groups_.end()) {
                 auto &members = git2->second.members;
@@ -447,14 +451,17 @@ namespace esphome
                     if (!member)
                         continue;
 
-                    auto call = member->make_call();
-                    call.set_state(is_on);
-                    call.perform();
+                    if (member->current_values.is_on() != is_on) {
+                        auto call = member->make_call();
+                        call.set_state(is_on);
+                        call.perform();
+                    }
                 }
             }
+
+            updating_state_ = false;
         }
 
-            
-        }
+
     } // namespace fastcon
 } // namespace esphome
