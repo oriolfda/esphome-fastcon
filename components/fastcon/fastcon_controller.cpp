@@ -42,8 +42,36 @@ namespace esphome
             ESP_LOGCONFIG(TAG, "  Advertisement interval: %d-%d", this->adv_interval_min_, this->adv_interval_max_);
             ESP_LOGCONFIG(TAG, "  Advertisement duration: %dms", this->adv_duration_);
             ESP_LOGCONFIG(TAG, "  Advertisement gap: %dms", this->adv_gap_);
+        // Programar registre de callbacks DESPRÉS del boot
+            this->set_timeout("register_light_callbacks", 500, [this]() {
+                this->register_light_callbacks_();
+            });
             groups_ready_ = true;
+
         }
+
+        void FastconController::register_light_callbacks_() {
+            if (callbacks_registered_)
+                return;
+
+            ESP_LOGI(TAG, "Registering Fastcon light state callbacks");
+
+            for (auto &it : lights_) {
+                uint8_t light_id = it.first;
+                auto *light = it.second;
+
+                if (!light)
+                    continue;
+
+                light->add_on_state_callback(
+                    [this, light_id](light::LightState *state) {
+                        this->on_state_changed(light_id, state);
+                    });
+            }
+
+            callbacks_registered_ = true;
+        }
+
 
         void FastconController::loop()
         {
