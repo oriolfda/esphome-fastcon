@@ -454,7 +454,5 @@ namespace esphome
             }
         }
 
-            
-        }
     } // namespace fastcon
 } // namespace esphome
