@@ -70,7 +70,7 @@ async def to_code(config):
     cg.add(var.set_controller(controller))
 
     # Assign members (convert Python ID -> C++ pointer + light_id)
-    if CONF_MEMBERS in config and CONF_GROUP_ID in config:
+    if CONF_MEMBERS in config and CONF_GROUP_ID in config and CONF_LIGHT_ID in config:
         members_vars = []
         for member in config[CONF_MEMBERS]:
             member_var = await cg.get_variable(member)
