@@ -93,7 +93,7 @@ namespace esphome
             void register_group_member(uint8_t light_id, uint8_t group_id, light::LightState* member);
 
             // Notificar qualsevol canvi d’estat
-            void FastconController::on_state_changed(
+            void on_state_changed(
                 uint8_t light_id, 
                 light::LightState *state);
 
