@@ -417,7 +417,7 @@ namespace esphome
 
             updating_state_ = true;
 
-            // Propagar estat als grups als quals pertany el llum individual
+            // Propagar estat als grups als quals pertany el llum individual.
             auto git = light_groups_.find(light_id);
             if (git != light_groups_.end()) {
                 for (auto group_id : git->second) {
