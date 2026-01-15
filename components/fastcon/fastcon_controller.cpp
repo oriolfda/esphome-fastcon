@@ -334,7 +334,7 @@ namespace esphome
             if (light_id == group_id)
                 return;
 
-            // Evitar duplicats en el grup
+            // Evitar duplicats en el grup.
             auto &members = groups_[group_id].members;
             if (std::find(members.begin(), members.end(), member) == members.end())
                 members.push_back(member);
