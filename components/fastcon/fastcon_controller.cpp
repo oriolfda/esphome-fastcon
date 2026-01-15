@@ -331,49 +331,34 @@ namespace esphome
             light_groups_[member].push_back(group_id);
         }
 
-
-        // Quan un llum individual o grup canvia estat
-        void on_state_changed(light::LightState* light, light::LightState* state) {
-            if (light == nullptr) return;
-
-            // Si és un grup, actualitza tots els membres
-            auto it = group_members_.find(light_id_of(light)); // Funció auxiliar per obtenir group_id del LightState si és grup
-            if (it != group_members_.end()) {
-                for (auto* member : it->second) {
-                    if (member != nullptr) {
-                        auto call = member->make_call();
-                        call.set_state(state->is_on());
-                        call.set_brightness(state->get_brightness());
-                        // RGB / CT / White
-                        if (state->get_color_mode() == light::ColorMode::RGB) {
-                            call.set_rgb(state->get_red(), state->get_green(), state->get_blue());
-                        } else if (state->get_color_mode() == light::ColorMode::COLOR_TEMPERATURE) {
-                            call.set_color_temperature(state->get_color_temperature());
-                        }
-                        call.perform();
-                    }
-                }
-            }
-
-            // Actualitzar grups als quals pertany el llum individual
-            auto git = light_groups_.find(light);
+        // fastcon_controller.cpp: nou mètode on_state_changed(light_id, state)
+        void FastconController::on_state_changed(uint8_t light_id, light::LightState *state) {
+            // Buscar grups als quals pertany aquest light_id
+            auto git = light_groups_.find(light_id);
             if (git != light_groups_.end()) {
                 for (auto group_id : git->second) {
-                    auto members = group_members_[group_id];
+                    auto group_it = groups_.find(group_id);
+                    if (group_it == groups_.end()) continue;
+
+                    auto &members = group_it->second.members;  // punters a LightState
                     bool all_on = true;
-                    for (auto* m : members) {
-                        if (!m->is_on()) { all_on = false; break; }
+
+                    for (auto *m : members) {
+                        if (!m->current_values.is_on()) {
+                            all_on = false;
+                            break;
+                        }
                     }
-                    auto* group_light = find_group_light_by_id(group_id); // Retorna LightState* del grup
+
+                    auto *group_light = group_it->second.group;  // LightState* del grup
                     if (group_light != nullptr) {
                         auto call = group_light->make_call();
                         call.set_state(all_on);
+                        call.set_brightness(state->current_values.get_brightness());
                         call.perform();
                     }
                 }
             }
         }
-
-
     } // namespace fastcon
 } // namespace esphome
