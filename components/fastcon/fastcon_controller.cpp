@@ -325,5 +325,39 @@ namespace esphome
             std::vector<uint8_t> addr = {DEFAULT_BLE_FASTCON_ADDRESS.begin(), DEFAULT_BLE_FASTCON_ADDRESS.end()};
             return prepare_payload(addr, body);
         }
+        void FastconController::register_group_member(uint8_t group_id, FastconLight *group, FastconLight *member) {
+            auto &g = this->groups_[group_id];
+            g.group = group;
+            if (std::find(g.members.begin(), g.members.end(), member) == g.members.end()) {
+                g.members.push_back(member);
+            }
+            this->light_groups_[member].push_back(group_id);
+        }
+
+        void FastconController::on_state_changed(FastconLight *source, light::LightState *state) {
+            if (!source || !state) retnurn;
+
+            // Només cal propagar si és un llum individual
+            if (source->is_group_) return;
+
+            auto git = light_groups_.find(source);
+            if (git != light_groups_.end()) {
+                for (auto group_id : git->second) {
+                    auto &group_info = groups_[group_id];
+                    bool all_on = true;
+                    for (auto *member : group_info.members) {
+                        if (!member->state_->current_values.is_on()) {
+                            all_on = false;
+                            break;
+                        }
+                    }
+
+                    auto call = group_info.group->state_->make_call();
+                    call.set_state(all_on);
+                    call.perform();  // actualitza HA
+                }
+            }
+        }
+
     } // namespace fastcon
 } // namespace esphome

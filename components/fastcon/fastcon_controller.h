@@ -83,6 +83,17 @@ namespace esphome
             bool get_last_has_rgb() const { return last_has_rgb_; }
             bool get_last_has_warm() const { return last_has_warm_; }
 
+            // Registrar relació grup → membre
+            void register_group_member(
+                uint8_t group_id,
+                FastconLight *group,
+                FastconLight *member);
+
+            // Notificar qualsevol canvi d’estat
+            void on_state_changed(
+                FastconLight *source,
+                light::LightState *state);
+
             // Send direct command from device (touchscreen+ESP32) to lights using BLE.
             void send_direct_command(uint8_t device_id, bool is_group, bool turn_on, 
                                     float brightness = 1.0f,
@@ -193,6 +204,15 @@ namespace esphome
                 ESP_LOGI("DEBUG", "11. Completat!");
                 ESP_LOGI("DEBUG", "========================================");
             }
+        private:
+            struct GroupInfo {
+            FastconLight *group;                   // punter al FastconLight que representa el grup
+            std::vector<FastconLight *> members;  // punters a llums que formen part del grup
+            };
+
+            std::unordered_map<uint8_t, GroupInfo> groups_;          // group_id -> GroupInfo
+            std::unordered_map<FastconLight *, std::vector<uint8_t>> light_groups_; // llum -> grups pare
+        };
 
         protected:
             struct Command

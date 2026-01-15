@@ -59,9 +59,12 @@ async def to_code(config):
 
     # Assign members (convert Python ID -> C++ pointer)
     if CONF_MEMBERS in config:
+        controller = await cg.get_variable(config[CONF_CONTROLLER_ID])
         for member in config[CONF_MEMBERS]:
             member_var = await cg.get_variable(member)
-            cg.add(var.add_member(member_var))
+            cg.add(controller.register_group_member(
+                config[CONF_GROUP_ID], var, member_var))
+
 
     # Supports CWWW?
     if config.get(CONF_SUPPORTS_CWWW):

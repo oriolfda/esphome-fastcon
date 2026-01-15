@@ -48,6 +48,11 @@ namespace esphome
 
             this->controller_->queueCommand(this->light_id_, adv_data);
 
+            if (this->controller_ != nullptr) {
+                this->controller_->on_state_changed(this, state);
+            }            
+
+/*   es mou a controller         
             // 🔥 SINCRONITZACIÓ DELS MEMBRES
             if (this->is_group_) {
                 for (auto *member : this->group_members_) {
@@ -73,8 +78,8 @@ namespace esphome
                 call.perform();
                 }
             }
+*/
         }
-
 
 
  /*
