@@ -98,6 +98,8 @@ namespace esphome
                 uint8_t light_id, 
                 light::LightState *state);
 
+            void dump_groups();
+
             // Send direct command from device (touchscreen+ESP32) to lights using BLE.
             void send_direct_command(uint8_t device_id, bool is_group, bool turn_on, 
                                     float brightness = 1.0f,

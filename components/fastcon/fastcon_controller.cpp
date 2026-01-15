@@ -326,6 +326,39 @@ namespace esphome
             return prepare_payload(addr, body);
         }
        
+        void FastconController::dump_groups() {
+            ESP_LOGD(TAG, "========== FASTCON GROUP MAP DUMP ==========");
+
+            ESP_LOGD(TAG, "groups_ size: %d", groups_.size());
+            for (auto &g : groups_) {
+                uint8_t group_id = g.first;
+                auto &info = g.second;
+
+                ESP_LOGD(TAG, "Group ID %d:", group_id);
+                ESP_LOGD(TAG, "  group LightState ptr: %p", info.group);
+                ESP_LOGD(TAG, "  members count: %d", info.members.size());
+
+                int idx = 0;
+                for (auto *m : info.members) {
+                    ESP_LOGD(TAG, "    [%d] member LightState ptr: %p", idx++, m);
+                }
+            }
+
+            ESP_LOGD(TAG, "light_groups_ size: %d", light_groups_.size());
+            for (auto &lg : light_groups_) {
+                uint8_t light_id = lg.first;
+                auto &groups = lg.second;
+
+                ESP_LOGD(TAG, "Light ID %d belongs to %d group(s):", light_id, groups.size());
+                for (auto gid : groups) {
+                    ESP_LOGD(TAG, "    -> group ID %d", gid);
+                }
+            }
+
+            ESP_LOGD(TAG, "============================================");
+        }
+
+
         // Registrar un grup amb IDs i punters als members
         void FastconController::register_group(
             uint8_t group_id,
@@ -355,6 +388,7 @@ namespace esphome
             groups_[group_id] = info;
 
             ESP_LOGD(TAG, "Registered group ID %d with %d members", group_id, info.members.size());
+            dump_groups();
         }
 
         // Registrar un member individual (encara disponible si cal)
@@ -378,6 +412,9 @@ namespace esphome
         // fastcon_controller.cpp: nou mètode on_state_changed(light_id, state)
         void FastconController::on_state_changed(uint8_t light_id, light::LightState *state) {
             // Buscar grups als quals pertany aquest light_id
+            ESP_LOGD(TAG, "on_state_changed called");
+            dump_groups();
+            
             auto git = this->light_groups_.find(light_id);
             if (git != this->light_groups_.end()) {
                 for (auto group_id : git->second) {
