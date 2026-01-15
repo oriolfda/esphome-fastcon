@@ -333,6 +333,7 @@ namespace esphome
 
             updating_state_ = true;
             ESP_LOGD(TAG, "groups_ size: %d", groups_.size());
+            /*
             for (auto &g : groups_) {
                 uint8_t group_id = g.first;
                 auto &info = g.second;
@@ -346,7 +347,7 @@ namespace esphome
                     ESP_LOGD(TAG, "    [%d] member LightState ptr: %p", idx++, m);
                 }
             }
-
+*/
             ESP_LOGD(TAG, "light_groups_ size: %d", light_groups_.size());
             for (auto &lg : light_groups_) {
                 uint8_t light_id = lg.first;
@@ -407,7 +408,7 @@ namespace esphome
             if (std::find(lg_vec.begin(), lg_vec.end(), group_id) == lg_vec.end()) {
                 lg_vec.push_back(group_id);
             }
-            //dump_groups();
+            dump_groups();
             ESP_LOGD(TAG, "Registered light ID %d to group ID %d", light_id, group_id);
         }
 
