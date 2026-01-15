@@ -435,7 +435,7 @@ namespace esphome
                     if (group_light && group_light->current_values.is_on() != all_on) {
                         auto call = group_light->make_call();
                         call.set_state(all_on);
-                        call.perform();
+               //         call.perform();
                     }
                 }
             }
