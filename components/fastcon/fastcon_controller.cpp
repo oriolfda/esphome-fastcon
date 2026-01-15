@@ -409,11 +409,9 @@ namespace esphome
         }
 
 
-        void FastconController::on_state_changed(light::LightState *light, light::LightState *state) {
-            if (!light || !state)
+        void FastconController::on_state_changed(uint8_t light_id, light::LightState *state) {
+            if (!state)
                 return;
-
-            uint8_t light_id = light->get_light_id();
 
             // 1️⃣ Propagar estat als grups als quals pertany el llum individual
             auto git = light_groups_.find(light_id);
@@ -443,11 +441,9 @@ namespace esphome
                 }
             }
 
-            // 2️⃣ Si el canvi és sobre un grup, propagar als seus membres
-            // (suposem que light_id correspon a un grup_id)
+            // 2️⃣ Si el canvi és sobre un grup (light_id = group_id), propagar als membres
             auto git2 = groups_.find(light_id);
             if (git2 != groups_.end()) {
-                // Evitar bucle si aquest grup ja està actualitzant-se
                 if (!updating_group_map_[light_id]) {
                     updating_group_map_[light_id] = true;
 
