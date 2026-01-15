@@ -347,7 +347,7 @@ namespace esphome
                     ESP_LOGD(TAG, "    [%d] member LightState ptr: %p", idx++, m);
                 }
             }
-*/
+
             ESP_LOGD(TAG, "light_groups_ size: %d", light_groups_.size());
             for (auto &lg : light_groups_) {
                 uint8_t light_id = lg.first;
@@ -359,7 +359,9 @@ namespace esphome
                 }
             }
             updating_state_ = false;
+            */
             ESP_LOGD(TAG, "============================================");
+
         }
 
 
