@@ -72,10 +72,6 @@ async def to_code(config):
         group_id = config[CONF_GROUP_ID]
         cg.add(var.set_group_id(group_id))
 
-    # Assign controller
-    controller = await cg.get_variable(config.get(CONF_CONTROLLER_ID, "fastcon_controller"))
-    cg.add(var.set_controller(controller))
-
     # Assign members (convert Python ID -> C++ pointer + light_id)
     # ─────────────────────────────
     # REGISTRE DE GRUPS
@@ -91,8 +87,8 @@ async def to_code(config):
                 config[CONF_GROUP_ID],
                 member_state
             ))
+    if controller:
         cg.add(controller.dump_groups())
-
 
     # Supports CWWW?
     if config.get(CONF_SUPPORTS_CWWW):
