@@ -14,7 +14,7 @@ AUTO_LOAD = ["light"]
 
 CONF_CONTROLLER_ID = "controller_id"
 CONF_GROUP_ID = "group_id"  # New configuration key for groups
-CONF_MEMBERS = "members"
+CONF_MEMBERS_WITH_ID = "members_with_id"
 
 fastcon_ns = cg.esphome_ns.namespace("fastcon")
 FastconLight = fastcon_ns.class_("FastconLight", light.LightOutput, cg.Component)
