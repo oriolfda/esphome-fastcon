@@ -204,6 +204,7 @@ namespace esphome
                 ESP_LOGI("DEBUG", "11. Completat!");
                 ESP_LOGI("DEBUG", "========================================");
             }
+        
         private:
             struct GroupInfo {
             light::LightState *group;                   // punter al LightState que representa el grup
@@ -212,8 +213,7 @@ namespace esphome
 
             std::unordered_map<uint8_t, GroupInfo> groups_;          // group_id -> GroupInfo
             std::unordered_map<light::LightState *, std::vector<uint8_t>> light_groups_; // llum -> grups pare
-        }
-
+   
         protected:
             struct Command
             {
