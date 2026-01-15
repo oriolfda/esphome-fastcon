@@ -46,6 +46,8 @@ namespace esphome
             void setup() override;
             void loop() override;
 
+            void register_light_callbacks_(); 
+
             std::vector<uint8_t> get_light_data(light::LightState *state);
             std::vector<uint8_t> single_control(uint32_t addr, 
                                                 const std::vector<uint8_t> &light_data,
@@ -221,7 +223,7 @@ namespace esphome
             std::unordered_map<uint8_t, std::vector<uint8_t>> light_groups_; // light_id -> grups pare    
             bool groups_ready_{false};
             bool callbacks_registered_{false};
-            
+
         protected:
             struct Command
             {
