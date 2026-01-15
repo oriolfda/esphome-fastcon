@@ -257,6 +257,8 @@ namespace esphome
             bool last_has_rgb_ = false;
             bool last_has_warm_ = false;  // O has_temp, depenent del que vulguis
 
+            bool updating_groups_ = false; // afegir com a membre de classe
+
             static const uint16_t MANUFACTURER_DATA_ID = 0xfff0;
         };
 
