@@ -42,6 +42,7 @@ namespace esphome
             ESP_LOGCONFIG(TAG, "  Advertisement interval: %d-%d", this->adv_interval_min_, this->adv_interval_max_);
             ESP_LOGCONFIG(TAG, "  Advertisement duration: %dms", this->adv_duration_);
             ESP_LOGCONFIG(TAG, "  Advertisement gap: %dms", this->adv_gap_);
+            dump_groups();
         }
 
         void FastconController::loop()
@@ -410,7 +411,7 @@ namespace esphome
             if (std::find(lg_vec.begin(), lg_vec.end(), group_id) == lg_vec.end()) {
                 lg_vec.push_back(group_id);
             }
-            dump_groups();
+
             ESP_LOGD(TAG, "Registered light ID %d to group ID %d", light_id, group_id);
         }
 
