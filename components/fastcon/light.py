@@ -3,7 +3,7 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import light
-from esphome.const import CONF_LIGHT_ID, CONF_OUTPUT_ID
+from esphome.const import CONF_LIGHT_ID, CONF_OUTPUT_ID, CONF_ID
 from .fastcon_controller import FastconController
 
 # New config key to toggle RGBCW capability per-entity
@@ -15,6 +15,7 @@ AUTO_LOAD = ["light"]
 CONF_CONTROLLER_ID = "controller_id"
 CONF_GROUP_ID = "group_id"  # New configuration key for groups
 CONF_MEMBERS_WITH_ID = "members_with_id"
+
 
 fastcon_ns = cg.esphome_ns.namespace("fastcon")
 FastconLight = fastcon_ns.class_("FastconLight", light.LightOutput, cg.Component)
