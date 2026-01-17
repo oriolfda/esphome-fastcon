@@ -466,7 +466,6 @@ namespace esphome
                         call.set_state(all_on);
                         call.set_brightness(state->current_values.get_brightness());
                         call.perform();
-                    }                        
                     }
                 }
             }
