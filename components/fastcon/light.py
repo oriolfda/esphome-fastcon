@@ -15,12 +15,45 @@ AUTO_LOAD = ["light"]
 CONF_CONTROLLER_ID = "controller_id"
 CONF_GROUP_ID = "group_id"  # New configuration key for groups
 CONF_MEMBERS_WITH_ID = "members_with_id"
+
+# Variables globals
 FASTCON_GROUPS = {}
 FASTCON_GROUP_STATES = {}
 
 fastcon_ns = cg.esphome_ns.namespace("fastcon")
 FastconLight = fastcon_ns.class_("FastconLight", light.LightOutput, cg.Component)
 
+
+# PRIMER definim la funció finalize
+def finalize(config):
+    """Hook que s'executa al final per registrar tots els grups"""
+    async def generate_all_groups():
+        if not FASTCON_GROUPS:
+            return
+        
+        controller_id = config.get(CONF_CONTROLLER_ID, "fastcon_controller")
+        controller = await cg.get_variable(controller_id)
+        
+        for group_id, members in FASTCON_GROUPS.items():
+            group_state = FASTCON_GROUP_STATES.get(group_id)
+            
+            for light_id, member_id in members:
+                member_state = await cg.get_variable(member_id)
+                
+                cg.add(
+                    controller.register_group_member(
+                        light_id,
+                        group_id,
+                        member_state,
+                        group_state if group_state else cg.RawExpression("nullptr")
+                    )
+                )
+    
+    # Retorna una validació que afegeix el codi a la cua
+    return cv.Schema(lambda value: cg.add_to_queue(generate_all_groups()))
+
+
+# DESPRÉS definim el CONFIG_SCHEMA
 CONFIG_SCHEMA = cv.All(
     light.BRIGHTNESS_ONLY_LIGHT_SCHEMA
     .extend(
@@ -30,7 +63,6 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_LIGHT_ID): cv.int_range(min=1, max=255),
             # New optional group_id parameter
             cv.Optional(CONF_GROUP_ID): cv.int_range(min=1, max=255),
-#            cv.Optional(CONF_MEMBERS): cv.ensure_list(cv.use_id(light.LightState)),
             cv.Optional(CONF_MEMBERS_WITH_ID): cv.ensure_list(
                 cv.Schema({
                     cv.Required(CONF_ID): cv.use_id(light.LightState),
@@ -43,9 +75,10 @@ CONFIG_SCHEMA = cv.All(
     )
     .extend(cv.COMPONENT_SCHEMA),
     # VALIDATION: Must have either light_id OR group_id
-    cv.has_at_least_one_key(CONF_LIGHT_ID, CONF_GROUP_ID,
-    finalize)
+    cv.has_at_least_one_key(CONF_LIGHT_ID, CONF_GROUP_ID),
+    finalize  # <-- ARA SÍ QUE ESTÀ DEFINIT
 )
+
 
 async def to_code(config):
     light_id_value = config.get(CONF_LIGHT_ID, 0)
@@ -92,44 +125,7 @@ async def to_code(config):
                 (m[CONF_LIGHT_ID], m[CONF_ID])
             )
     
-    # Generar els grups (només un cop)
-    # ─────────────────────────────
-    #if FASTCON_GROUPS and not hasattr(to_code, "_groups_emitted"):
-    #    await generate_fastcon_groups(controller)
-    #    to_code._groups_emitted = True
-    
+    # ⚠️ NOTA: NO generem els grups aquí! Ho farà finalize()
     # Supports CWWW?
     if config.get(CONF_SUPPORTS_CWWW):
-        cg.add(var.set_supports_cwww(True))    
-
-# Al final del fitxer light.py, després de totes les funcions
-
-# Hook que s'executa al final de tot
-@coroutine_with_priority(100.0)  # Prioritat baixa (s'executa al final)
-async def to_finalize_code(config, controller_id):
-    """S'executa al final per registrar tots els grups"""
-    if not FASTCON_GROUPS:
-        return
-    
-    controller = await cg.get_variable(controller_id)
-    
-    for group_id, members in FASTCON_GROUPS.items():
-        # Obtenir LightState del grup (si existeix)
-        group_state = FASTCON_GROUP_STATES.get(group_id)
-        
-        for light_id, member_id in members:
-            member_state = await cg.get_variable(member_id)
-            
-            cg.add(
-                controller.register_group_member(
-                    light_id,
-                    group_id,
-                    member_state,
-                    group_state if group_state else cg.RawExpression("nullptr")
-                )
-            )
-
-# Registrar el hook
-def finalize(config):
-    controller_id = config.get(CONF_CONTROLLER_ID, "fastcon_controller")
-    return cg.add_to_queue(to_finalize_code(config, controller_id))
+        cg.add(var.set_supports_cwww(True))
