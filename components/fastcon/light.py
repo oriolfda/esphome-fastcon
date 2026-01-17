@@ -44,74 +44,8 @@ CONFIG_SCHEMA = cv.All(
     .extend(cv.COMPONENT_SCHEMA),
     # VALIDATION: Must have either light_id OR group_id
     cv.has_at_least_one_key(CONF_LIGHT_ID, CONF_GROUP_ID)
+    finalize
 )
-
-async def to_code2(config):
-    light_id_value = config.get(CONF_LIGHT_ID, 0)
-    var = cg.new_Pvariable(config[CONF_OUTPUT_ID], light_id_value)
-
-    await cg.register_component(var, config)
-    await light.register_light(var, config)
-
-    # Assign the appropriate ID (light_id or group_id)
-    if CONF_LIGHT_ID in config:
-        light_id = config[CONF_LIGHT_ID]
-        cg.add(var.set_light_id(light_id))
-    elif CONF_GROUP_ID in config:
-        group_id = config[CONF_GROUP_ID]
-        cg.add(var.set_group_id(group_id))
-
-    # Assign controller
-    controller = await cg.get_variable(config.get(CONF_CONTROLLER_ID, "fastcon_controller"))
-    cg.add(var.set_controller(controller))
-
-    # Assign the appropriate ID (light_id or group_id)
-    if CONF_LIGHT_ID in config:
-        light_id = config[CONF_LIGHT_ID]
-        cg.add(var.set_light_id(light_id))
-    elif CONF_GROUP_ID in config:
-        group_id = config[CONF_GROUP_ID]
-        cg.add(var.set_group_id(group_id))
-
-    # Assign members (convert Python ID -> C++ pointer + light_id)
-    # ─────────────────────────────
-    # REGISTRE DE GRUPS
-    # ─────────────────────────────
-    if CONF_MEMBERS_WITH_ID in config:
-        group_id = config[CONF_GROUP_ID]
-
-        if group_id not in FASTCON_GROUPS:
-            FASTCON_GROUPS[group_id] = []
-
-        for m in config[CONF_MEMBERS_WITH_ID]:
-            FASTCON_GROUPS[group_id].append(
-                (m[CONF_LIGHT_ID], m[CONF_ID])
-            )    
-    
-    if FASTCON_GROUPS and not hasattr(to_code, "_groups_emitted"):
-        await generate_fastcon_groups(controller)
-        to_code._groups_emitted = True
-        # Supports CWWW?
-        if config.get(CONF_SUPPORTS_CWWW):
-            cg.add(var.set_supports_cwww(True))
-
-async def generate_fastcon_groups2(controller):
-    if not FASTCON_GROUPS:
-        return
-
-    #controller = await cg.get_variable(config.get(CONF_CONTROLLER_ID, "fastcon_controller"))
-
-    for group_id, members in FASTCON_GROUPS.items():
-        for light_id, member_id in members:
-            member_state = await cg.get_variable(member_id)
-
-            cg.add(
-                controller.register_group_member(
-                    light_id,
-                    group_id,
-                    member_state
-                )
-            )
 
 async def to_code(config):
     light_id_value = config.get(CONF_LIGHT_ID, 0)
@@ -160,18 +94,25 @@ async def to_code(config):
     
     # Generar els grups (només un cop)
     # ─────────────────────────────
-    if FASTCON_GROUPS and not hasattr(to_code, "_groups_emitted"):
-        await generate_fastcon_groups(controller)
-        to_code._groups_emitted = True
+    #if FASTCON_GROUPS and not hasattr(to_code, "_groups_emitted"):
+    #    await generate_fastcon_groups(controller)
+    #    to_code._groups_emitted = True
     
     # Supports CWWW?
     if config.get(CONF_SUPPORTS_CWWW):
         cg.add(var.set_supports_cwww(True))    
 
-async def generate_fastcon_groups(controller):
+# Al final del fitxer light.py, després de totes les funcions
+
+# Hook que s'executa al final de tot
+@coroutine_with_priority(100.0)  # Prioritat baixa (s'executa al final)
+async def to_finalize_code(config, controller_id):
+    """S'executa al final per registrar tots els grups"""
     if not FASTCON_GROUPS:
         return
-
+    
+    controller = await cg.get_variable(controller_id)
+    
     for group_id, members in FASTCON_GROUPS.items():
         # Obtenir LightState del grup (si existeix)
         group_state = FASTCON_GROUP_STATES.get(group_id)
@@ -179,7 +120,6 @@ async def generate_fastcon_groups(controller):
         for light_id, member_id in members:
             member_state = await cg.get_variable(member_id)
             
-            # Passem group_state (o nullptr si no existeix)
             cg.add(
                 controller.register_group_member(
                     light_id,
@@ -188,3 +128,8 @@ async def generate_fastcon_groups(controller):
                     group_state if group_state else cg.RawExpression("nullptr")
                 )
             )
+
+# Registrar el hook
+def finalize(config):
+    controller_id = config.get(CONF_CONTROLLER_ID, "fastcon_controller")
+    return cg.add_to_queue(to_finalize_code(config, controller_id))
