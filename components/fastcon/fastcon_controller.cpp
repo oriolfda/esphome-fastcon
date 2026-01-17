@@ -361,12 +361,32 @@ namespace esphome
                             info.members.size(), unique_members.size());
                 }
                 
+                size_t printed_count = 0;
                 int idx = 0;
                 for (auto *m : info.members) {
                     ESP_LOGCONFIG(TAG, "    [%d] member LightState ptr: %p", idx++, m);
+                    printed_count++;
+                }
+                if (printed_count != info.members.size()) {
+                    ESP_LOGW(TAG, "⚠️  DISCREPÀNCIA: size()=%zu però imprès %zu!", 
+                    info.members.size(), printed_count);
+        }
+            }
+            ESP_LOGCONFIG(TAG, "light_groups_ size: %d", light_groups_.size());
+            for (auto &lg : light_groups_) {
+                uint8_t light_id = lg.first;
+                auto &groups = lg.second;
+
+                ESP_LOGCONFIG(TAG, "Light ID %d belongs to %d group(s):", light_id, groups.size());
+                for (auto gid : groups) {
+                    ESP_LOGCONFIG(TAG, "    -> group ID %d", gid);
                 }
             }
-            // ...
+            
+            updating_state_ = false;
+            
+            ESP_LOGCONFIG(TAG, "============================================");
+
         }
 
         // Registrar un grup amb IDs i punters als members
