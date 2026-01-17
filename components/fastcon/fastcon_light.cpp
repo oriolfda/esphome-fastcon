@@ -29,7 +29,7 @@ namespace esphome
                 is_group ? "Grup" : (is_individual ? "Individual" : "Unknown"));
             
             if (is_group) {
-                ESP_LOGCONFIG(TAG, "    Group ID: %u", group_id_);
+                ESP_LOGCONFIG(TAG, "    Group ID: %u", light_id_
             }
             if (is_individual) {
                 ESP_LOGCONFIG(TAG, "    Light ID: %u", light_id_);
@@ -43,7 +43,7 @@ namespace esphome
             
             // Si és un grup, podríem registrar el seu LightState aquí
             if (is_group && state_) {
-                ESP_LOGD(TAG, "Setting up group %u with LightState %p", group_id_, state_);
+                ESP_LOGD(TAG, "Setting up group %u with LightState %p", light_id_, state_);
                 // Opcional: registrar el group_state al controlador
                 // controller_->register_group_state(group_id_, state_);
             }
