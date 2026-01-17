@@ -374,6 +374,7 @@ namespace esphome
 
 
         // Registrar un grup amb IDs i punters als members
+        
         void FastconController::register_group(
             uint8_t group_id,
             uint8_t group_light_id,
@@ -406,20 +407,28 @@ namespace esphome
         }
 
         // Registrar un member individual (encara disponible si cal)
-        void FastconController::register_group_member(uint8_t light_id, uint8_t group_id, light::LightState* member) {
+        void FastconController::register_group_member(uint8_t light_id, uint8_t group_id, light::LightState* member,  light::LightState* group_state) {
             if (!member) return;
+
+        // Registrar el LightState del grup (si s'ha passat)
+            if (group_state && !groups_[group_id].group) {
+                groups_[group_id].group = group_state;
+                ESP_LOGD(TAG, "Registered GROUP ID %d with LightState %p", group_id, group_state);
+            }
 
             auto &members = groups_[group_id].members;
             if (std::find(members.begin(), members.end(), member) == members.end()) {
                 members.push_back(member);
+                ESP_LOGD(TAG, "  Added member %p to group %d", member, group_id);
             }
 
             auto &lg_vec = light_groups_[light_id];
             if (std::find(lg_vec.begin(), lg_vec.end(), group_id) == lg_vec.end()) {
                 lg_vec.push_back(group_id);
+                ESP_LOGD(TAG, "  Light ID %d now belongs to group %d", light_id, group_id);
             }
 
-            ESP_LOGD(TAG, "Registered light ID %d to group ID %d", light_id, group_id);
+           // ESP_LOGD(TAG, "Registered light ID %d to group ID %d", light_id, group_id);
         }
 
         void FastconController::on_state_changed(uint8_t light_id, light::LightState *state) {
