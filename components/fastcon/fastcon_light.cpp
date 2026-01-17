@@ -49,7 +49,7 @@ namespace esphome
             this->controller_->queueCommand(this->light_id_, adv_data);
 
             if (this->controller_ != nullptr) {
-              //  this->controller_->on_state_changed(this->light_id_, state);
+              this->controller_->on_state_changed(this->light_id_, state);
               this->controller_->dump_groups();
             }            
 
