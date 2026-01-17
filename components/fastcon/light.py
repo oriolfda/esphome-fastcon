@@ -115,7 +115,7 @@ async def generate_fastcon_groups2(controller):
 
 async def to_code(config):
     light_id_value = config.get(CONF_LIGHT_ID, 0)
-    var = cg.new_Pvariable(config[CONF_OUTPUT_ID], light_id_value)
+    var = cg.new_Pvariable(config[CONF_OUTPUT_ID], light_id_value)  # FastconLight*
 
     await cg.register_component(var, config)
     await light.register_light(var, config)
@@ -136,9 +136,12 @@ async def to_code(config):
     # ──────────────────────────────────────────────
     if CONF_GROUP_ID in config:
         group_id = config[CONF_GROUP_ID]
-        FASTCON_GROUP_STATES[group_id] = var  # <-- Guardem el LightState del grup
-        # DEBUG: Pots afegir un print temporal per verificar
-        # print(f"[DEBUG] Registered group {group_id} LightState")
+        
+        # IMPORTANT: Obtenir el LightState (no el FastconLight)
+        # config[CONF_ID] és l'ID del LightState
+        group_state = await cg.get_variable(config[CONF_ID])
+        
+        FASTCON_GROUP_STATES[group_id] = group_state  # LightState*
 
     # Assign members (convert Python ID -> C++ pointer + light_id)
     # ─────────────────────────────
@@ -154,7 +157,6 @@ async def to_code(config):
             FASTCON_GROUPS[group_id].append(
                 (m[CONF_LIGHT_ID], m[CONF_ID])
             )
-        # DEBUG: print(f"[DEBUG] Added {len(config[CONF_MEMBERS_WITH_ID])} members to group {group_id}")
     
     # Generar els grups (només un cop)
     # ─────────────────────────────
@@ -164,7 +166,7 @@ async def to_code(config):
     
     # Supports CWWW?
     if config.get(CONF_SUPPORTS_CWWW):
-        cg.add(var.set_supports_cwww(True))         
+        cg.add(var.set_supports_cwww(True))    
 
 async def generate_fastcon_groups(controller):
     if not FASTCON_GROUPS:
