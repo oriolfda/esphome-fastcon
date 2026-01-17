@@ -98,7 +98,8 @@ namespace esphome
             // Notificar qualsevol canvi d’estat
             void on_state_changed(
                 uint8_t light_id, 
-                light::LightState *state);
+                light::LightState *state,
+                bool is_group);
 
             void dump_groups();
 

@@ -431,7 +431,7 @@ namespace esphome
            // ESP_LOGD(TAG, "Registered light ID %d to group ID %d", light_id, group_id);
         }
 
-        void FastconController::on_state_changed(uint8_t light_id, light::LightState *state) {
+        void FastconController::on_state_changed(uint8_t light_id, light::LightState *state, bool is_group) {
             if (!state)
                 return;
 
@@ -443,51 +443,54 @@ namespace esphome
 
             updating_state_ = true;
 
-            // 🔹 Propagar estat als grups als quals pertany el llum individual
-            auto git = light_groups_.find(light_id);
-            if (git != light_groups_.end()) {
-                for (auto group_id : git->second) {
-                    auto &group_info = groups_[group_id];
+            if (! is_group){
+                // 🔹 Propagar estat als grups als quals pertany el llum individual
+                auto git = light_groups_.find(light_id);
+                if (git != light_groups_.end()) {
+                    for (auto group_id : git->second) {
+                        auto &group_info = groups_[group_id];
 
-                    bool all_on = true;
-                    for (auto* m : group_info.members) {
-                        if (!m->current_values.is_on()) {
-                            all_on = false;
-                            break;
+                        bool all_on = true;
+                        for (auto* m : group_info.members) {
+                            if (!m->current_values.is_on()) {
+                                all_on = false;
+                                break;
+                            }
                         }
-                    }
 
-                    auto* group_light = group_info.group;
-                    if (group_light && group_light->current_values.is_on() != all_on) {
-                        // Canviem call.perform() per publish_state()
-                        //   group_light->current_values.set_state(all_on);
-                        //   group_light->publish_state();
-                        auto call = group_light->make_call();
-                        call.set_state(all_on);
-                        call.set_brightness(state->current_values.get_brightness());
-                        call.perform();
+                        auto* group_light = group_info.group;
+                        if (group_light && group_light->current_values.is_on() != all_on) {
+                            // Canviem call.perform() per publish_state()
+                            //   group_light->current_values.set_state(all_on);
+                            //   group_light->publish_state();
+                            auto call = group_light->make_call();
+                            call.set_state(all_on);
+                            call.set_brightness(state->current_values.get_brightness());
+                            call.perform();
+                        }
                     }
                 }
             }
+            else{
+                // 🔹 Si el canvi és sobre un grup, propagar als membres
+                auto git2 = groups_.find(light_id);
+                if (git2 != groups_.end()) {
+                    auto &members = git2->second.members;
+                    auto* group_light = git2->second.group;
+                    bool is_on = group_light->current_values.is_on();
 
-            // 🔹 Si el canvi és sobre un grup, propagar als membres
-            auto git2 = groups_.find(light_id);
-            if (git2 != groups_.end()) {
-                auto &members = git2->second.members;
-                auto* group_light = git2->second.group;
-                bool is_on = group_light->current_values.is_on();
+                    for (auto* member : members) {
+                        if (!member)
+                            continue;
 
-                for (auto* member : members) {
-                    if (!member)
-                        continue;
-
-                    if (member->current_values.is_on() != is_on) {
-                        //member->current_values.set_state(is_on);
-                        //member->publish_state();  // 🔹 substituïm call.perform()
-                        auto call2 = member->make_call();
-                        call2.set_state(is_on);
-                        call2.set_brightness(member->current_values.get_brightness());
-                        call2.perform();
+                        if (member->current_values.is_on() != is_on) {
+                            member->current_values.set_state(is_on);
+                            member->publish_state();  // 🔹 substituïm call.perform()
+                            //auto call2 = member->make_call();
+                            //call2.set_state(is_on);
+                            //call2.set_brightness(member->current_values.get_brightness());
+                            //call2.perform();
+                        }
                     }
                 }
             }
