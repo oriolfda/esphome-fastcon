@@ -24,33 +24,40 @@ fastcon_ns = cg.esphome_ns.namespace("fastcon")
 FastconLight = fastcon_ns.class_("FastconLight", light.LightOutput, cg.Component)
 
 
-# PRIMER definim la funció finalize
+# PRIMER definim la funció finalize CORREGIDA
 def finalize(config):
     """Hook que s'executa al final per registrar tots els grups"""
-    async def generate_all_groups():
-        if not FASTCON_GROUPS:
-            return
-        
-        controller_id = config.get(CONF_CONTROLLER_ID, "fastcon_controller")
-        controller = await cg.get_variable(controller_id)
-        
-        for group_id, members in FASTCON_GROUPS.items():
-            group_state = FASTCON_GROUP_STATES.get(group_id)
-            
-            for light_id, member_id in members:
-                member_state = await cg.get_variable(member_id)
-                
-                cg.add(
-                    controller.register_group_member(
-                        light_id,
-                        group_id,
-                        member_state,
-                        group_state if group_state else cg.RawExpression("nullptr")
-                    )
-                )
     
-    # Retorna una validació que afegeix el codi a la cua
-    return cv.Schema(lambda value: cg.add_to_queue(generate_all_groups()))
+    # Crear una funció que afegeixi el codi a la cua de compilació
+    def finalizer(value):
+        async def generate_all_groups():
+            if not FASTCON_GROUPS:
+                return
+            
+            controller_id = config.get(CONF_CONTROLLER_ID, "fastcon_controller")
+            controller = await cg.get_variable(controller_id)
+            
+            for group_id, members in FASTCON_GROUPS.items():
+                group_state = FASTCON_GROUP_STATES.get(group_id)
+                
+                for light_id, member_id in members:
+                    member_state = await cg.get_variable(member_id)
+                    
+                    cg.add(
+                        controller.register_group_member(
+                            light_id,
+                            group_id,
+                            member_state,
+                            group_state if group_state else cg.RawExpression("nullptr")
+                        )
+                    )
+        
+        # Afegir a la cua de compilació
+        cg.add_to_queue(generate_all_groups())
+        return value  # Retorna el valor sense canvis
+    
+    # Retornar una funció de validació senzilla
+    return finalizer
 
 
 # DESPRÉS definim el CONFIG_SCHEMA
@@ -125,7 +132,6 @@ async def to_code(config):
                 (m[CONF_LIGHT_ID], m[CONF_ID])
             )
     
-    # ⚠️ NOTA: NO generem els grups aquí! Ho farà finalize()
     # Supports CWWW?
     if config.get(CONF_SUPPORTS_CWWW):
         cg.add(var.set_supports_cwww(True))
