@@ -18,11 +18,37 @@ namespace esphome
                 this->mark_failed();
                 return;
             }
+            
             ESP_LOGCONFIG(TAG, "Setting up Fastcon BLE light (ID: %d)...", this->light_id_);
             
-            ESP_LOGCONFIG(TAG, "  Fastcon Light: %s ID: %u", 
-                is_group_ ? "Grup" : "Individual", light_id_);
+            // Determinar si és grup o llum individual
+            bool is_group = (group_id_ > 0 && light_id_ == 0);
+            bool is_individual = (light_id_ > 0);
+            
+            ESP_LOGCONFIG(TAG, "  Fastcon Light: %s", 
+                is_group ? "Grup" : (is_individual ? "Individual" : "Unknown"));
+            
+            if (is_group) {
+                ESP_LOGCONFIG(TAG, "    Group ID: %u", group_id_);
+            }
+            if (is_individual) {
+                ESP_LOGCONFIG(TAG, "    Light ID: %u", light_id_);
+            }
+            
+            // 🔥 AQUESTA ÉS LA CLAU: Auto-registrar als grups pendents
+            if (is_individual && state_) {
+                ESP_LOGD(TAG, "Auto-registering light_id %u to pending groups", light_id_);
+                controller_->auto_register_to_groups(light_id_, state_);
+            }
+            
+            // Si és un grup, podríem registrar el seu LightState aquí
+            if (is_group && state_) {
+                ESP_LOGD(TAG, "Setting up group %u with LightState %p", group_id_, state_);
+                // Opcional: registrar el group_state al controlador
+                // controller_->register_group_state(group_id_, state_);
+            }
         }
+
 
         void FastconLight::set_controller(FastconController *controller)
         {

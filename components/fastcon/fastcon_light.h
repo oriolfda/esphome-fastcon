@@ -44,6 +44,7 @@ namespace esphome
             bool has_rgb_{false};
             bool has_warm_{false};
             bool supports_cwww_{false};
+            light::LightState* state_{nullptr};  // <-- AFEGIR AQUEST
         };
     } // namespace fastcon
 } // namespace esphome

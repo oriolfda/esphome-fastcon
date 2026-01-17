@@ -498,6 +498,72 @@ namespace esphome
             updating_state_ = false;
         }
 
+        // 1. Afegir grup pendent
+        void FastconController::add_pending_group(uint8_t group_id, light::LightState* group_state, 
+                                                const std::vector<uint8_t>& light_ids) {
+            if (!group_state) return;
+            
+            PendingGroup pg;
+            pg.group_state = group_state;
+            pg.pending_light_ids = light_ids;
+            
+            pending_groups_[group_id] = pg;
+            
+            ESP_LOGD(TAG, "Added pending group %d with %zu members", group_id, light_ids.size());
+        }
+
+        // 2. Auto-registre quan un llum es crea
+        void FastconController::auto_register_to_groups(uint8_t light_id, light::LightState* state) {
+            if (!state) return;
+            
+            ESP_LOGD(TAG, "Auto-registering light_id %d (state: %p)", light_id, state);
+            
+            // Buscar en tots els grups pendents
+            std::vector<uint8_t> groups_to_remove_from_pending;
+            
+            for (auto& [group_id, pg] : pending_groups_) {
+                // Buscar si aquest light_id és membre d'aquest grup pendent
+                auto it = std::find(pg.pending_light_ids.begin(), pg.pending_light_ids.end(), light_id);
+                
+                if (it != pg.pending_light_ids.end()) {
+                    // Sí, és membre! Registrar-ho
+                    register_group_member(light_id, group_id, state, pg.group_state);
+                    ESP_LOGD(TAG, "  -> Registered to group %d", group_id);
+                    
+                    // Eliminar d'IDs pendents
+                    pg.pending_light_ids.erase(it);
+                    
+                    // Si el grup ja no té membres pendents, marcar per eliminar
+                    if (pg.pending_light_ids.empty()) {
+                        groups_to_remove_from_pending.push_back(group_id);
+                        ESP_LOGD(TAG, "  -> Group %d completed!", group_id);
+                    }
+                }
+            }
+            
+            // Eliminar grups completats
+            for (auto group_id : groups_to_remove_from_pending) {
+                pending_groups_.erase(group_id);
+            }
+            
+            dump_pending_groups();  // Debug
+        }
+
+        // 3. Debug pending groups
+        void FastconController::dump_pending_groups() {
+            if (pending_groups_.empty()) return;
+            
+            ESP_LOGD(TAG, "=== PENDING GROUPS ===");
+            for (auto& [group_id, pg] : pending_groups_) {
+                ESP_LOGD(TAG, "Group %d: %zu pending members", 
+                        group_id, pg.pending_light_ids.size());
+                
+                for (auto light_id : pg.pending_light_ids) {
+                    ESP_LOGD(TAG, "  - light_id: %d", light_id);
+                }
+            }
+            ESP_LOGD(TAG, "======================");
+        }
 
     } // namespace fastcon
 } // namespace esphome

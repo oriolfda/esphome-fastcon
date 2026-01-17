@@ -103,6 +103,15 @@ namespace esphome
 
             void dump_groups();
 
+            struct PendingGroup {
+                light::LightState* group_state{nullptr};
+                std::vector<uint8_t> pending_light_ids;  // light_ids que falten
+            };
+            
+            void add_pending_group(uint8_t group_id, light::LightState* group_state, const std::vector<uint8_t>& light_ids);
+            void auto_register_to_groups(uint8_t light_id, light::LightState* state);
+            void dump_pending_groups();  // Per debug
+
             // Send direct command from device (touchscreen+ESP32) to lights using BLE.
             void send_direct_command(uint8_t device_id, bool is_group, bool turn_on, 
                                     float brightness = 1.0f,
@@ -222,6 +231,8 @@ namespace esphome
 
             std::unordered_map<uint8_t, GroupInfo> groups_;          // group_id -> GroupInfo
             std::unordered_map<uint8_t, std::vector<uint8_t>> light_groups_; // light_id -> grups pare    
+            std::unordered_map<uint8_t, PendingGroup> pending_groups_;
+
             bool groups_ready_{false};
             bool callbacks_registered_{false};
 
