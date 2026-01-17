@@ -119,7 +119,7 @@ def finalize_fastcon(config):
     """Hook que s'executa al final per registrar tots els grups"""
     # IMPORTANT: Usar cv.Schema amb cv.requires_compatible
     return cv.Schema(
-        cv.requires_component("fastcon", "groups", lambda value: register_all_fastcon_groups())
+        cv.requires_compatible("fastcon", "groups", lambda value: register_all_fastcon_groups())
     )
 
 # 🎯 AFEGIR HOOK AL SCHEMA
