@@ -335,43 +335,39 @@ namespace esphome
        
         void FastconController::dump_groups() {
             ESP_LOGCONFIG(TAG, "========== FASTCON GROUP MAP DUMP ==========");
-            if (updating_state_)
-                return;
-
-            updating_state_ = true;
-            ESP_LOGCONFIG(TAG, "groups_ size: %d", groups_.size());
             
-            for (auto &g : groups_) {
-                uint8_t group_id = g.first;
-                auto &info = g.second;
-
+            // 🔥 DESACTIVA actualitzacions durant el dump
+            updating_state_ = true;
+            
+            // Fes una instantània ràpida
+            auto groups_snapshot = groups_;
+            auto light_groups_snapshot = light_groups_;
+            
+            updating_state_ = false;
+            
+            // Imprimeix de la instantània
+            for (auto &[group_id, info] : groups_snapshot) {
                 ESP_LOGCONFIG(TAG, "Group ID %d:", group_id);
-                ESP_LOGCONFIG(TAG, "  group LightState ptr: %p", info.group);
-                ESP_LOGCONFIG(TAG, "  members count: %d", info.members.size());
-
+                ESP_LOGCONFIG(TAG, "  members count: %zu", info.members.size());
+                
+                // 🔥 VERIFICA que no hi ha duplicats!
+                std::unordered_set<light::LightState*> unique_members;
+                for (auto* m : info.members) {
+                    unique_members.insert(m);
+                }
+                
+                if (unique_members.size() != info.members.size()) {
+                    ESP_LOGW(TAG, "  ⚠️  WARNING: %zu members but %zu UNIQUE!", 
+                            info.members.size(), unique_members.size());
+                }
+                
                 int idx = 0;
                 for (auto *m : info.members) {
                     ESP_LOGCONFIG(TAG, "    [%d] member LightState ptr: %p", idx++, m);
                 }
             }
-
-            ESP_LOGCONFIG(TAG, "light_groups_ size: %d", light_groups_.size());
-            for (auto &lg : light_groups_) {
-                uint8_t light_id = lg.first;
-                auto &groups = lg.second;
-
-                ESP_LOGCONFIG(TAG, "Light ID %d belongs to %d group(s):", light_id, groups.size());
-                for (auto gid : groups) {
-                    ESP_LOGCONFIG(TAG, "    -> group ID %d", gid);
-                }
-            }
-            
-            updating_state_ = false;
-            
-            ESP_LOGCONFIG(TAG, "============================================");
-
+            // ...
         }
-
 
         // Registrar un grup amb IDs i punters als members
         
