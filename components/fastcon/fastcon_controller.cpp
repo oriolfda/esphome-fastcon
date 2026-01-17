@@ -334,11 +334,11 @@ namespace esphome
         }
        
         void FastconController::dump_groups() {
-            ESP_LOGCONFIG(TAG, "========== FASTCON GROUP MAP DUMP ==========");
+           
             
             // 🔥 DESACTIVA actualitzacions durant el dump
             updating_state_ = true;
-            
+            ESP_LOGCONFIG(TAG, "========== FASTCON GROUP MAP DUMP ==========");
             // Fes una instantània ràpida
             auto groups_snapshot = groups_;
             auto light_groups_snapshot = light_groups_;
@@ -382,11 +382,8 @@ namespace esphome
                     ESP_LOGCONFIG(TAG, "    -> group ID %d", gid);
                 }
             }
-            
-            updating_state_ = false;
-            
             ESP_LOGCONFIG(TAG, "============================================");
-
+            updating_state_ = false;
         }
 
         // Registrar un grup amb IDs i punters als members
@@ -432,10 +429,12 @@ namespace esphome
                 ESP_LOGD(TAG, "Registered GROUP ID %d with LightState %p", group_id, group_state);
             }
 
-            auto &members = groups_[group_id].members;
-            if (std::find(members.begin(), members.end(), member) == members.end()) {
-                members.push_back(member);
-                ESP_LOGD(TAG, "  Added member %p to group %d", member, group_id);
+            if (groups_[group_id].group){
+                auto &members = groups_[group_id].members;
+                if (std::find(members.begin(), members.end(), member) == members.end()) {
+                    members.push_back(member);
+                    ESP_LOGD(TAG, "  Added member %p to group %d", member, group_id);
+                }
             }
 
             auto &lg_vec = light_groups_[light_id];
