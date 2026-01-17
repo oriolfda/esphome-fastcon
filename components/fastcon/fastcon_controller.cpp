@@ -482,8 +482,12 @@ namespace esphome
                         continue;
 
                     if (member->current_values.is_on() != is_on) {
-                        member->current_values.set_state(is_on);
-                        member->publish_state();  // 🔹 substituïm call.perform()
+                        //member->current_values.set_state(is_on);
+                        //member->publish_state();  // 🔹 substituïm call.perform()
+                        auto call2 = member->make_call();
+                        call2.set_state(is_on);
+                        call2.set_brightness(member->current_values.get_brightness());
+                        call2.perform();
                     }
                 }
             }
