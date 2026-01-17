@@ -45,7 +45,7 @@ namespace esphome
             ESP_LOGCONFIG(TAG, "  Advertisement gap: %dms", this->adv_gap_);
         // Programar registre de callbacks DESPRÉS del boot
             this->set_timeout("register_light_callbacks", 500, [this]() {
-                this->register_light_callbacks_();
+  //              this->register_light_callbacks_();
             });
             groups_ready_ = true;
 

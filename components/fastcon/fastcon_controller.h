@@ -46,7 +46,7 @@ namespace esphome
             void setup() override;
             void loop() override;
 
-            void register_light_callbacks_(); 
+            //void register_light_callbacks_(); 
 
             std::vector<uint8_t> get_light_data(light::LightState *state);
             std::vector<uint8_t> single_control(uint32_t addr, 
