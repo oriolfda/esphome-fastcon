@@ -51,47 +51,6 @@ namespace esphome
 
         }
 
-        void FastconController::register_light_callbacks_() {
-            if (callbacks_registered_)
-                return;
-
-            ESP_LOGI(TAG, "Registering Fastcon light state callbacks");
-
-            // Per evitar registrar dues vegades el mateix LightState
-            std::unordered_set<light::LightState*> done;
-
-            for (auto &g : groups_) {
-                for (auto* member : g.second.members) {
-                    if (!member)
-                        continue;
-
-                    if (done.find(member) != done.end())
-                        continue;
-                    done.insert(member);
-
-                    // Aquí no cal cap getter, el light_id ja el tenim del YAML quan vam fer register_group_member
-                    uint8_t light_id = 0;
-                    // Només necessitem identificar la callback amb l'ID que vam passar
-                    for (auto &lg : light_groups_) {
-                        auto &ids = lg.second;
-                        if (std::find(ids.begin(), ids.end(), g.first) != ids.end()) {
-                            light_id = lg.first;
-                            break;
-                        }
-                    }
-
-                    member->add_on_state_callback(
-                        [this, light_id](light::LightState* state) {
-                            this->on_state_changed(light_id, state);
-                        });
-                }
-            }
-
-            callbacks_registered_ = true;
-        }
-
-
-
         void FastconController::loop()
         {
             const uint32_t now = millis();
