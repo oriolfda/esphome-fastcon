@@ -6,19 +6,17 @@ from esphome.components import light
 from esphome.const import CONF_LIGHT_ID, CONF_OUTPUT_ID, CONF_ID
 from .fastcon_controller import FastconController
 
-# New config key to toggle RGBCW capability per-entity
 CONF_SUPPORTS_CWWW = "supports_cwww"
-
 DEPENDENCIES = ["esp32_ble"]
 AUTO_LOAD = ["light"]
 
 CONF_CONTROLLER_ID = "controller_id"
-CONF_GROUP_ID = "group_id"  # New configuration key for groups
+CONF_GROUP_ID = "group_id"
 CONF_MEMBERS_WITH_ID = "members_with_id"
 
-# Variables globals per al registre en dues fases
-FASTCON_PENDING_GROUPS = {}  # group_id -> (group_state, [(light_id, member_id), ...])
-FASTCON_PENDING_MEMBERSHIPS = {}  # member_id -> [(group_id, light_id), ...]
+# Variables globals SIMPLES
+FASTCON_GROUPS = {}  # group_id -> [(light_id, member_id), ...]
+FASTCON_GROUP_STATES = {}  # group_id -> group_light_state
 
 fastcon_ns = cg.esphome_ns.namespace("fastcon")
 FastconLight = fastcon_ns.class_("FastconLight", light.LightOutput, cg.Component)
@@ -28,9 +26,7 @@ CONFIG_SCHEMA = cv.All(
     .extend(
         {
             cv.GenerateID(CONF_OUTPUT_ID): cv.declare_id(FastconLight),
-            # Changed from Required to Optional for light_id
             cv.Optional(CONF_LIGHT_ID): cv.int_range(min=1, max=255),
-            # New optional group_id parameter
             cv.Optional(CONF_GROUP_ID): cv.int_range(min=1, max=255),
             cv.Optional(CONF_MEMBERS_WITH_ID): cv.ensure_list(
                 cv.Schema({
@@ -43,7 +39,6 @@ CONFIG_SCHEMA = cv.All(
         }
     )
     .extend(cv.COMPONENT_SCHEMA),
-    # VALIDATION: Must have either light_id OR group_id
     cv.has_at_least_one_key(CONF_LIGHT_ID, CONF_GROUP_ID)
 )
 
@@ -66,72 +61,86 @@ async def to_code(config):
     controller = await cg.get_variable(config.get(CONF_CONTROLLER_ID, "fastcon_controller"))
     cg.add(var.set_controller(controller))
 
-    # 🎯 REGISTRE EN DUES FASES
+    # 🎯 ACUMULAR INFORMACIÓ (NO REGISTRAR ENCARA)
     
-    # FASE 1: SI ÉS UN GRUP, GUARDAR LA SEVA INFORMACIÓ
-    if CONF_GROUP_ID in config and CONF_MEMBERS_WITH_ID in config:
-        group_id = config[CONF_GROUP_ID]
-        group_state = await cg.get_variable(config[CONF_ID])
-        
-        # Guardar informació del grup pendent
-        members_info = []
-        for m in config[CONF_MEMBERS_WITH_ID]:
-            # member_light_id: el light_id que s'ha d'usar per a aquest membre
-            # member_id: l'ID del LightState del membre
-            members_info.append((m[CONF_LIGHT_ID], m[CONF_ID]))
-        
-        FASTCON_PENDING_GROUPS[group_id] = (group_state, members_info)
-        
-        # També guardar relacions inverses per als membres
-        for member_light_id, member_id in members_info:
-            if member_id not in FASTCON_PENDING_MEMBERSHIPS:
-                FASTCON_PENDING_MEMBERSHIPS[member_id] = []
-            FASTCON_PENDING_MEMBERSHIPS[member_id].append((group_id, member_light_id))
-    
-    # FASE 2: SI ÉS UN LLUM INDIVIDUAL, REGISTRAR-SE ALS SEUS GRUPS
-    if CONF_LIGHT_ID in config:
-        my_id = config[CONF_ID]  # ID d'aquest LightState
-        
-        if my_id in FASTCON_PENDING_MEMBERSHIPS:
-            # Aquest llum és membre d'alguns grups pendents
-            my_state = await cg.get_variable(my_id)
-            
-            for group_id, member_light_id in FASTCON_PENDING_MEMBERSHIPS[my_id]:
-                # El grup ha d'existir (hauria d'haver estat processat)
-                if group_id in FASTCON_PENDING_GROUPS:
-                    group_state, _ = FASTCON_PENDING_GROUPS[group_id]
-                    
-                    # Registrar aquest llum com a membre del grup
-                    cg.add(
-                        controller.register_group_member(
-                            member_light_id,  # Light_id específic per a aquest membre
-                            group_id,
-                            my_state,         # LightState d'aquest llum
-                            group_state       # LightState del grup
-                        )
-                    )
-            
-            # Eliminar de pendents (ja registrat)
-            del FASTCON_PENDING_MEMBERSHIPS[my_id]
-    
-    # Cleanup: si és un grup, verificar si tots els seus membres ja estan registrats
+    # Guardar LightState del grup
     if CONF_GROUP_ID in config:
         group_id = config[CONF_GROUP_ID]
-        if group_id in FASTCON_PENDING_GROUPS:
-            group_state, members_info = FASTCON_PENDING_GROUPS[group_id]
-            
-            # Comprovar si tots els membres ja estan registrats
-            all_registered = True
-            for _, member_id in members_info:
-                if member_id in FASTCON_PENDING_MEMBERSHIPS:
-                    # Aquest membre encara no s'ha registrat
-                    all_registered = False
-                    break
-            
-            if all_registered:
-                # Tots els membres registrats, podem eliminar el grup pendent
-                del FASTCON_PENDING_GROUPS[group_id]
+        group_state = await cg.get_variable(config[CONF_ID])
+        FASTCON_GROUP_STATES[group_id] = group_state
+
+    # Guardar membres dels grups
+    if CONF_MEMBERS_WITH_ID in config:
+        group_id = config[CONF_GROUP_ID]
+        
+        if group_id not in FASTCON_GROUPS:
+            FASTCON_GROUPS[group_id] = []
+        
+        for m in config[CONF_MEMBERS_WITH_ID]:
+            FASTCON_GROUPS[group_id].append(
+                (m[CONF_LIGHT_ID], m[CONF_ID])
+            )
     
     # Supports CWWW?
     if config.get(CONF_SUPPORTS_CWWW):
         cg.add(var.set_supports_cwww(True))
+
+# 🎯 FUNCIÓ QUE REALMENT REGISTRA ELS GRUPS
+async def register_all_fastcon_groups():
+    """Registra tots els grups al controlador"""
+    if not FASTCON_GROUPS:
+        return
+    
+    # Necessitem un controller (assumim que tots usen el mateix)
+    controller = await cg.get_variable("fastcon_controller")
+    
+    for group_id, members in FASTCON_GROUPS.items():
+        group_state = FASTCON_GROUP_STATES.get(group_id)
+        
+        for light_id, member_id in members:
+            try:
+                # Intentar obtenir el LightState del membre
+                member_state = await cg.get_variable(member_id)
+                
+                cg.add(
+                    controller.register_group_member(
+                        light_id,
+                        group_id,
+                        member_state,
+                        group_state if group_state else cg.RawExpression("nullptr")
+                    )
+                )
+            except:
+                # El membre encara no existeix, ho tornarem a intentar
+                pass
+
+# 🎯 HOOK FINAL SIMPLE I FUNCIONAL
+def finalize_fastcon(config):
+    """Hook que s'executa al final per registrar tots els grups"""
+    # IMPORTANT: Usar cv.Schema amb cv.requires_compatible
+    return cv.Schema(
+        cv.requires_compatible("fastcon", "groups", lambda value: register_all_fastcon_groups())
+    )
+
+# 🎯 AFEGIR HOOK AL SCHEMA
+CONFIG_SCHEMA = cv.All(
+    light.BRIGHTNESS_ONLY_LIGHT_SCHEMA
+    .extend(
+        {
+            cv.GenerateID(CONF_OUTPUT_ID): cv.declare_id(FastconLight),
+            cv.Optional(CONF_LIGHT_ID): cv.int_range(min=1, max=255),
+            cv.Optional(CONF_GROUP_ID): cv.int_range(min=1, max=255),
+            cv.Optional(CONF_MEMBERS_WITH_ID): cv.ensure_list(
+                cv.Schema({
+                    cv.Required(CONF_ID): cv.use_id(light.LightState),
+                    cv.Required(CONF_LIGHT_ID): cv.int_range(min=1, max=255),
+                })
+            ),            
+            cv.Optional(CONF_CONTROLLER_ID, default="fastcon_controller"): cv.use_id(FastconController),
+            cv.Optional(CONF_SUPPORTS_CWWW, default=False): cv.boolean,
+        }
+    )
+    .extend(cv.COMPONENT_SCHEMA),
+    cv.has_at_least_one_key(CONF_LIGHT_ID, CONF_GROUP_ID),
+    finalize_fastcon
+)
