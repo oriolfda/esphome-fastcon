@@ -137,7 +137,8 @@ async def to_code(config):
     if CONF_GROUP_ID in config:
         group_id = config[CONF_GROUP_ID]
         FASTCON_GROUP_STATES[group_id] = var  # <-- Guardem el LightState del grup
-        ESP_LOGD("fastcon", "Registered group %d LightState: %p", group_id, var)
+        # DEBUG: Pots afegir un print temporal per verificar
+        # print(f"[DEBUG] Registered group {group_id} LightState")
 
     # Assign members (convert Python ID -> C++ pointer + light_id)
     # ─────────────────────────────
@@ -153,34 +154,25 @@ async def to_code(config):
             FASTCON_GROUPS[group_id].append(
                 (m[CONF_LIGHT_ID], m[CONF_ID])
             )
-        ESP_LOGD("fastcon", "Added %d members to group %d", 
-                 len(config[CONF_MEMBERS_WITH_ID]), group_id)
+        # DEBUG: print(f"[DEBUG] Added {len(config[CONF_MEMBERS_WITH_ID])} members to group {group_id}")
     
     # Generar els grups (només un cop)
     # ─────────────────────────────
     if FASTCON_GROUPS and not hasattr(to_code, "_groups_emitted"):
         await generate_fastcon_groups(controller)
         to_code._groups_emitted = True
-        ESP_LOGD("fastcon", "Generated fastcon groups")
     
     # Supports CWWW?
     if config.get(CONF_SUPPORTS_CWWW):
-        cg.add(var.set_supports_cwww(True))            
+        cg.add(var.set_supports_cwww(True))         
 
 async def generate_fastcon_groups(controller):
     if not FASTCON_GROUPS:
         return
-    
-    ESP_LOGD("fastcon", "Generating %d fastcon groups", len(FASTCON_GROUPS))
 
     for group_id, members in FASTCON_GROUPS.items():
         # Obtenir LightState del grup (si existeix)
         group_state = FASTCON_GROUP_STATES.get(group_id)
-        
-        if group_state:
-            ESP_LOGD("fastcon", "Group %d has LightState: %p", group_id, group_state)
-        else:
-            ESP_LOGW("fastcon", "Group %d has NO LightState!", group_id)
         
         for light_id, member_id in members:
             member_state = await cg.get_variable(member_id)
@@ -194,7 +186,3 @@ async def generate_fastcon_groups(controller):
                     group_state if group_state else cg.RawExpression("nullptr")
                 )
             )
-            ESP_LOGD("fastcon", "  Member: light_id=%d, member_state=%p", 
-                     light_id, member_state)
-    
-    ESP_LOGD("fastcon", "Finished generating fastcon groups")
