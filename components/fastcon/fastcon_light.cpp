@@ -29,7 +29,7 @@ namespace esphome
                 is_group ? "Grup" : (is_individual ? "Individual" : "Unknown"));
             
             if (is_group) {
-                ESP_LOGCONFIG(TAG, "    Group ID: %u", light_id_
+                ESP_LOGCONFIG(TAG, "    Group ID: %u", light_id_);
             }
             if (is_individual) {
                 ESP_LOGCONFIG(TAG, "    Light ID: %u", light_id_);
