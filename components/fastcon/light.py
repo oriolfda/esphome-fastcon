@@ -61,7 +61,9 @@ async def to_code(config):
         group_id = config[CONF_GROUP_ID]
         cg.add(var.set_group_id(group_id))
 
-    controller = await cg.get_variable(config.get(CONF_CONTROLLER_ID, "fastcon_controller"))
+    # 🔥 CANVI IMPORTANT: Obtenir l'ID del controller del config
+    controller_id = config[CONF_CONTROLLER_ID]  # Aquest JA ÉS un ID objecte
+    controller = await cg.get_variable(controller_id)
     cg.add(var.set_controller(controller))
 
     # Guardar informació dels grups
@@ -81,11 +83,11 @@ async def to_code(config):
                 (m[CONF_LIGHT_ID], m[CONF_ID])
             )
     
-    # 🔥 AQUEST ÉS EL CANVI CLAU: Afegir tasca al final
+    # 🔥 CORREGIT: Passar el controller_id, no un string
     if not FASTCON_TASK_ADDED and FASTCON_GROUPS:
-        # Crear tasca que s'executi al final
         async def register_groups_task():
-            controller = await cg.get_variable("fastcon_controller")
+            # Utilitzar el mateix controller_id que ja tenim
+            controller = await cg.get_variable(controller_id)
             
             for group_id, members in FASTCON_GROUPS.items():
                 group_state = FASTCON_GROUP_STATES.get(group_id)
@@ -103,9 +105,11 @@ async def to_code(config):
                             )
                         )
                     except:
+                        # Si falla, el membre encara no existeix
+                        # Això passarà si el grup es processa abans que el membre
+                        # Però com que estem a un CORE.add_job(), ja haurien d'existir tots
                         pass
         
-        # 🔥 AQUEST ÉS L'ÚNIC LLOC ON CAL CORE.add_job
         CORE.add_job(register_groups_task)
         FASTCON_TASK_ADDED = True
     
