@@ -332,61 +332,71 @@ namespace esphome
             std::vector<uint8_t> addr = {DEFAULT_BLE_FASTCON_ADDRESS.begin(), DEFAULT_BLE_FASTCON_ADDRESS.end()};
             return prepare_payload(addr, body);
         }
-       
-void FastconController::dump_groups() {
-    // 🔒 PROTECCIÓ COMPLETA
-    std::lock_guard<std::mutex> lock(dump_mutex_);  // Si tens mutex
-    
-    ESP_LOGCONFIG(TAG, "\n\n========== FASTCON GROUP MAP DUMP ==========");
-    
-    // 1. Fer còpia COMPLETA i segura
-    struct Snapshot {
-        uint8_t group_id;
-        size_t member_count;
-        std::vector<light::LightState*> members;
-    };
-    
-    std::vector<Snapshot> group_snapshots;
-    
-    // Copiar ràpidament
-    for (auto &[group_id, info] : groups_) {
-        Snapshot snap;
-        snap.group_id = group_id;
-        snap.member_count = info.members.size();
-        snap.members = info.members;  // Còpia del vector
-        group_snapshots.push_back(snap);
-    }
-    
-    // 2. Imprimir de la còpia
-    for (auto &snap : group_snapshots) {
-        ESP_LOGCONFIG(TAG, "Group ID %d:", snap.group_id);
-        ESP_LOGCONFIG(TAG, "  members count: %zu", snap.member_count);
-        
-        // 🔥 VERIFICA consistència
-        if (snap.members.size() != snap.member_count) {
-            ESP_LOGW(TAG, "  ⚠️  INCONSISTENT: vector size=%zu vs count=%zu", 
-                     snap.members.size(), snap.member_count);
-        }
-        
-        // Imprimir amb índex CORRECTE
-        for (size_t i = 0; i < snap.members.size(); i++) {
-            ESP_LOGCONFIG(TAG, "    [%zu] member ptr: %p", i, snap.members[i]);
-        }
-        
-        // Si hi ha més entrades de les esperades, és error del LOG
-        if (snap.members.size() < snap.member_count) {
-            ESP_LOGW(TAG, "  ⚠️  FALTEN %zu membres al log!", 
-                     snap.member_count - snap.members.size());
-        }
-    }
-    
-    // 3. light_groups_ (similar)
-    ESP_LOGCONFIG(TAG, "\nlight_groups_ size: %zu", light_groups_.size());
-    
-    // ... resta del codi ...
-    
-    ESP_LOGCONFIG(TAG, "============================================\n\n");
-}
+
+        void FastconController::dump_groups() {
+            ESP_LOGCONFIG(TAG, "========== FASTCON GROUP MAP DUMP ==========");
+            
+            // 1. Copiar tots els IDs de grups a un vector (segur)
+            std::vector<uint8_t> group_ids;
+            for (auto &g : groups_) {
+                group_ids.push_back(g.first);
+            }
+            
+            // 2. Per cada grup, fer còpia local i imprimir
+            ESP_LOGCONFIG(TAG, "groups_ size: %zu", group_ids.size());
+            
+            for (uint8_t group_id : group_ids) {
+                auto it = groups_.find(group_id);
+                if (it == groups_.end()) continue;
+                
+                auto &info = it->second;
+                
+                // 🔥 COPIA LOCAL del vector de membres
+                std::vector<light::LightState*> members_copy = info.members;
+                
+                ESP_LOGCONFIG(TAG, "Group ID %d:", group_id);
+                ESP_LOGCONFIG(TAG, "  group LightState ptr: %p", info.group);
+                ESP_LOGCONFIG(TAG, "  members count: %zu", members_copy.size());
+                
+                // Imprimir de la còpia (segur)
+                for (size_t i = 0; i < members_copy.size(); i++) {
+                    ESP_LOGCONFIG(TAG, "    [%zu] member LightState ptr: %p", i, members_copy[i]);
+                }
+                
+                // Verificació extra
+                if (members_copy.size() != info.members.size()) {
+                    ESP_LOGW(TAG, "  ⚠️  DISCREPÀNCIA: còpia=%zu vs original=%zu", 
+                            members_copy.size(), info.members.size());
+                }
+            }
+            
+            // 3. Copiar light_groups_ també
+            std::vector<uint8_t> light_ids;
+            for (auto &lg : light_groups_) {
+                light_ids.push_back(lg.first);
+            }
+            
+            ESP_LOGCONFIG(TAG, "light_groups_ size: %zu", light_ids.size());
+            
+            for (uint8_t light_id : light_ids) {
+                auto it = light_groups_.find(light_id);
+                if (it == light_groups_.end()) continue;
+                
+                auto &groups_vec = it->second;
+                
+                // 🔥 COPIA LOCAL del vector de grups
+                std::vector<uint8_t> groups_copy = groups_vec;
+                
+                ESP_LOGCONFIG(TAG, "Light ID %d belongs to %zu group(s):", light_id, groups_copy.size());
+                
+                for (size_t i = 0; i < groups_copy.size(); i++) {
+                    ESP_LOGCONFIG(TAG, "    -> group ID %d", groups_copy[i]);
+                }
+            }
+            
+            ESP_LOGCONFIG(TAG, "============================================");
+        }        
+
         // Registrar un grup amb IDs i punters als members
         
         void FastconController::register_group(
