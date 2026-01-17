@@ -22,7 +22,7 @@ namespace esphome
             ESP_LOGCONFIG(TAG, "Setting up Fastcon BLE light (ID: %d)...", this->light_id_);
             
             // Determinar si és grup o llum individual
-            bool is_group = (group_id_ > 0 && light_id_ == 0);
+            bool is_group = is_group_;
             bool is_individual = (light_id_ > 0);
             
             ESP_LOGCONFIG(TAG, "  Fastcon Light: %s", 
