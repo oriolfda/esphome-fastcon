@@ -43,8 +43,8 @@ CONFIG_SCHEMA = cv.All(
     )
     .extend(cv.COMPONENT_SCHEMA),
     # VALIDATION: Must have either light_id OR group_id
-    cv.has_at_least_one_key(CONF_LIGHT_ID, CONF_GROUP_ID),
-    finalize
+    cv.has_at_least_one_key(CONF_LIGHT_ID, CONF_GROUP_ID,
+    finalize)
 )
 
 async def to_code(config):
