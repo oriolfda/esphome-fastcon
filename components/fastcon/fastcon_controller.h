@@ -175,7 +175,7 @@ namespace esphome
                 light_state.current_values = color_values;
                 light_state.remote_values = color_values;
                 light_state.set_name(light_name.c_str());
-                light_state.set_object_id(device_id_str);
+             //   light_state.set_object_id(device_id_str);
 
                 // 5. Obtenim dades
                 ESP_LOGI("DEBUG", "7. Cridant get_light_data()");
