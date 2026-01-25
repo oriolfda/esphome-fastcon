@@ -78,10 +78,10 @@ async def to_code(config):
         if group_id not in FASTCON_GROUPS:
             FASTCON_GROUPS[group_id] = []
         
-        for m in config[CONF_MEMBERS_WITH_ID]:
-            FASTCON_GROUPS[group_id].append(
-                (m[CONF_LIGHT_ID], m[CONF_ID])
-            )
+            for m in config[CONF_MEMBERS_WITH_ID]:
+                FASTCON_GROUPS[group_id].append(
+                    (m[CONF_LIGHT_ID], m[CONF_ID])
+                )
     
     # 🔥 CORREGIT: Passar el controller_id, no un string
     if not FASTCON_TASK_ADDED and FASTCON_GROUPS:

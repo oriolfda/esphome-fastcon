@@ -118,7 +118,7 @@ namespace esphome
                                     light::ColorMode color_mode = light::ColorMode::BRIGHTNESS,
                                     const std::string &light_name = "") {
                 
-
+                
                 // Simplement defineix-ho així per ara:
                 bool has_rgb = false;  // Per a mode 7 (white) sempre false
                 bool has_warm = false; // Per a mode 7 (white) sempre false
