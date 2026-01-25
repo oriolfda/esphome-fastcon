@@ -427,7 +427,7 @@ namespace esphome
             groups_[group_id] = info;
 
             ESP_LOGD(TAG, "Registered group ID %d with %d members", group_id, info.members.size());
-            dump_groups();
+            //dump_groups();
         }
 
         // Registrar un member individual (encara disponible si cal)

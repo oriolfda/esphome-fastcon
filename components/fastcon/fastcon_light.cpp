@@ -76,7 +76,7 @@ namespace esphome
 
             if (this->controller_ != nullptr) {
            //   this->controller_->on_state_changed(this->light_id_, state, this->is_group_);
-              this->controller_->dump_groups();
+              //this->controller_->dump_groups();
             }            
 
 /*   es mou a controller         
