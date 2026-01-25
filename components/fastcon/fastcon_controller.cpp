@@ -432,13 +432,14 @@ namespace esphome
 
         // Registrar un member individual (encara disponible si cal)
         void FastconController::register_group_member(uint8_t light_id, uint8_t group_id, light::LightState* member,  light::LightState* group_state) {
+            ESP_LOGD(TAG, "----------------------------------------------------------------------------------");
             if (!member) return;
 
         // Registrar el LightState del grup (si s'ha passat)
             if (group_state && !groups_[group_id].group) {
                 groups_[group_id].group = group_state;
                 ESP_LOGD(TAG, "Registered GROUP ID %d with LightState %p", group_id, group_state);
-            }
+            }   
 
             if (groups_[group_id].group){
                 auto &members = groups_[group_id].members;
