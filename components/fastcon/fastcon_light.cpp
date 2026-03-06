@@ -75,9 +75,8 @@ namespace esphome
             this->controller_->queueCommand(this->light_id_, adv_data);
 
             if (this->controller_ != nullptr) {
-           //   this->controller_->on_state_changed(this->light_id_, state, this->is_group_);
-              //this->controller_->dump_groups();
-            }            
+              this->controller_->on_state_changed(this->light_id_, state, this->is_group_);
+            }
 
 /*   es mou a controller         
             // 🔥 SINCRONITZACIÓ DELS MEMBRES

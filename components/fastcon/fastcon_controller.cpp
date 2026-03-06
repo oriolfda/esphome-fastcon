@@ -462,13 +462,9 @@ namespace esphome
 
                         auto* group_light = group_info.group;
                         if (group_light && group_light->current_values.is_on() != all_on) {
-                            // Canviem call.perform() per publish_state()
-                            //   group_light->current_values.set_state(all_on);
-                            //   group_light->publish_state();
-                            auto call = group_light->make_call();
-                            call.set_state(all_on);
-                            call.set_brightness(state->current_values.get_brightness());
-                            call.perform();
+                            // Update HA/group entity state without sending a new BLE command.
+                            group_light->current_values.set_state(all_on);
+                            group_light->publish_state();
                         }
                     }
                 }
